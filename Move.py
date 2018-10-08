@@ -141,7 +141,23 @@ class Move:
         return moves
 
     def get_knight_moves(game_state, row, col):
-        return []
+        possibleMoves=[[row-1,col-2],[row-2,col-1],[row-1,col+2],[row-2,col+1],[row+1,col-2],[row+2,col-1],[row+1,col+2],[row+2,col+1]]
+        if self.next_player==GameState.cell_occupation_code_black: #if black player
+            for move in possibleMoves:
+                if (0 < move[0] < 8) and (0< move[1] < 8):
+                    if game_state.board[move[0]][move[1]] == GameState.cell_occupation_code_empty: #non capturing move
+                        moves.append(Move(game_state, [row, col], [i,col]))
+                    elif game_state.board[move[0]][move[1]]==GameState.cell_occupation_code_white: #capturing move
+                        moves.append(Move(game_state, [row, col], [i,col]))
+
+        if self.next_player==GameState.cell_occupation_code_white: #if white player
+            for move in possibleMoves:
+                if (0 < move[0] < 8) and (0< move[1] < 8):
+                    if game_state.board[move[0]][move[1]] == GameState.cell_occupation_code_empty: #non capturing move
+                        moves.append(Move(game_state, [row, col], [i,col]))
+                    elif game_state.board[move[0]][move[1]]==GameState.cell_occupation_code_black: #capturing move
+                        moves.append(Move(game_state, [row, col], [i,col]))
+        return moves
 
     def get_bishop_moves(game_state, row, col):
         return []

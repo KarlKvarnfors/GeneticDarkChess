@@ -163,7 +163,9 @@ class Move:
         return []
 
     def get_queen_moves(game_state, row, col):
-        return []
+        moves=get_rook_moves(game_state, row, col)
+        moves += get_bishop_moves(game_state, row, col)
+        return moves
 
     def get_king_moves(game_state, row, col):
         return []

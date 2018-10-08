@@ -116,7 +116,7 @@ class GameState:
         if occupation_code == self.cell_occupation_code_empty:
             return '.'
         elif occupation_code == self.cell_occupation_code_fog:
-            return 'X'
+            return '<fg #888888>X</fg #888888>'
 
         piece_string = ''
         if piece_type == self.cell_piece_type_pawn:
@@ -206,12 +206,38 @@ class GameState:
         print('  abcdefgh')
         print('')
 
+    def generate_fog_of_war_state(self):
+        
+        visible_cells = set()
+        for row in range(self.board_size):
+            for col in range(self.board_size):
+                if self.board[row][col][0] == self.next_player:
+                    visible_cells.add((row, col))
+        
+        moves = Move.get_possible_moves(self)
+        for move in moves:
+            for i in range(0, len(move.from_row_col), 2):
+                if move.to_row_col[i] >= 0 or move.to_row_col[i+1] >= 0:
+                    visible_cells.add((move.to_row_col[i], move.to_row_col[i+1]))
+
+        fog_of_war_state = GameState()
+        fog_of_war_state.next_player = self.next_player
+
+        for row in range(self.board_size):
+            for col in range(self.board_size):
+                fog_of_war_state.board[row][col][0] = self.board[row][col][0]
+                fog_of_war_state.board[row][col][1] = self.board[row][col][1]
+                if (row, col) not in visible_cells:
+                    fog_of_war_state.board[row][col][0] = self.cell_occupation_code_fog
+
+        return fog_of_war_state
+
 if __name__ == "__main__":
     game_state = GameState()
     game_state.set_initial_state()
 
     while True:
-        game_state.print_board()
+        game_state.generate_fog_of_war_state().print_board()
 
         moves = Move.get_possible_moves(game_state)
         print("Select a move: ")

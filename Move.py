@@ -6,6 +6,7 @@ class Move:
         self.from_row_col = from_row_col
         self.to_row_col = to_row_col
 
+    @staticmethod
     def get_possible_moves(game_state):
         moves = []
         for row in range(GameState.board_size):
@@ -15,6 +16,7 @@ class Move:
                     moves += piece_moves
         return moves
 
+    @staticmethod
     def get_possible_moves_for_piece(game_state, row, col):
         if game_state.board[row][col][0] != game_state.next_player:
             return []
@@ -34,6 +36,7 @@ class Move:
         elif game_state.board[row][col][1] == GameState.cell_piece_type_promoted_pawn:
             return Move.get_promoted_pawn_moves(game_state, row, col)
 
+    @staticmethod
     def get_pawn_moves(game_state, row, col):
         moves = []
 
@@ -79,6 +82,7 @@ class Move:
 
         return moves
 
+    @staticmethod
     def get_rook_moves(game_state, row, col): #excuse me for this awfully long function
         moves=[]
         if game_state.next_player==GameState.cell_occupation_code_black: #if black player
@@ -149,6 +153,7 @@ class Move:
                     break
         return moves
 
+    @staticmethod
     def get_knight_moves(game_state, row, col):
         moves=[]
         possibleMoves=[[row-1,col-2],[row-2,col-1],[row-1,col+2],[row-2,col+1],[row+1,col-2],[row+2,col-1],[row+1,col+2],[row+2,col+1]]
@@ -169,6 +174,7 @@ class Move:
                         moves.append(Move(game_state, [row, col], [move[0],move[1]]))
         return moves
 
+    @staticmethod
     def get_bishop_moves(game_state, row, col):
         moves=[]
         if game_state.next_player == GameState.cell_occupation_code_black: #if black player
@@ -240,11 +246,13 @@ class Move:
 
         return moves
 
+    @staticmethod
     def get_queen_moves(game_state, row, col):
         moves = Move.get_rook_moves(game_state, row, col)
         moves += Move.get_bishop_moves(game_state, row, col)
         return moves
 
+    @staticmethod
     def get_king_moves(game_state, row, col):
         moves=[]
         possibleMoves=[(row-1,col-1),(row-1,col),(row-1,col+1),(row,col-1),(row,col+1),(row+1,col-1),(row+1,col),(row+1,col+1)]

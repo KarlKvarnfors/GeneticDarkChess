@@ -169,63 +169,71 @@ class Move:
 
     def get_bishop_moves(game_state, row, col):
         moves=[]
-        if game_state.next_player==GameState.cell_occupation_code_black: #if black player
-            for r,c in zip(range(row,0,-1),range(col,0,-1)): #seacrhes diag1
-                if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
+        if game_state.next_player == GameState.cell_occupation_code_black: #if black player
+            for r,c in zip(range(row-1,-1,-1),range(col-1,-1,-1)): #seacrhes diag1
+                if game_state.board[r][c][0] == GameState.cell_occupation_code_empty: #non capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_white: #capturing move
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_white: #capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_black:
                     break
-            for r,c in zip(range(row,8,1),range(col,8,1)): #seacrhes diag2
-                if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_white: #capturing move
-                    moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_black:
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_black:
                     break
-            for r,c in zip(range(row,8,1),range(col,0,-1)): #seacrhes diag3
-                if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
+            for r,c in zip(range(row+1,8,1),range(col+1,8,1)): #seacrhes diag2
+                if game_state.board[r][c][0] == GameState.cell_occupation_code_empty: #non capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_white: #capturing move
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_white: #capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_black:
                     break
-            for r,c in zip(range(row,0,-1),range(col,8,1)): #seacrhes diag3
-                if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_white: #capturing move
-                    moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_black:
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_black:
                     break
-        if game_state.next_player==GameState.cell_occupation_code_white: #if black player
-            for r,c in zip(range(row,0,-1),range(col,0,-1)): #seacrhes diag1
-                if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
+            for r,c in zip(range(row+1,8,1),range(col-1,-1,-1)): #seacrhes diag3
+                if game_state.board[r][c][0] == GameState.cell_occupation_code_empty: #non capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_black: #capturing move
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_white: #capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_white:
                     break
-            for r,c in zip(range(row,8,1),range(col,8,1)): #seacrhes diag2
-                if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_black: #capturing move
-                    moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_white:
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_black:
                     break
-            for r,c in zip(range(row,8,1),range(col,0,-1)): #seacrhes diag3
-                if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
+            for r,c in zip(range(row-1,-1,-1),range(col+1,8,1)): #seacrhes diag3
+                if game_state.board[r][c][0] == GameState.cell_occupation_code_empty: #non capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_black: #capturing move
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_white: #capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_white:
                     break
-            for r,c in zip(range(row,0,-1),range(col,8,1)): #seacrhes diag3
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_black:
+                    break
+        if game_state.next_player == GameState.cell_occupation_code_white: #if black player
+            for r,c in zip(range(row-1,-1,-1),range(col-1,-1,-1)): #seacrhes diag1
+                if game_state.board[r][c][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [r,c]))
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_black: #capturing move
+                    moves.append(Move(game_state, [row, col], [r,c]))
+                    break
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_white:
+                    break
+            for r,c in zip(range(row+1,8,1),range(col+1,8,1)): #seacrhes diag2
+                if game_state.board[r][c][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [r,c]))
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_black: #capturing move
+                    moves.append(Move(game_state, [row, col], [r,c]))
+                    break
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_white:
+                    break
+            for r,c in zip(range(row+1,8,1),range(col-1,-1,-1)): #seacrhes diag3
                 if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_black: #capturing move
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_black: #capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
-                elif game_state.board[r][c]==GameState.cell_occupation_code_white:
+                    break
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_white:
+                    break
+            for r,c in zip(range(row-1,-1,-1),range(col+1,8,1)): #seacrhes diag3
+                if game_state.board[r][c][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [r,c]))
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_black: #capturing move
+                    moves.append(Move(game_state, [row, col], [r,c]))
+                    break
+                elif game_state.board[r][c][0] == GameState.cell_occupation_code_white:
                     break
 
         return moves

@@ -245,7 +245,6 @@ class Move:
         moves += Move.get_bishop_moves(game_state, row, col)
         return moves
 
-
     def get_king_moves(game_state, row, col):
         moves=[]
         possibleMoves=[(row-1,col-1),(row-1,col),(row-1,col+1),(row,col-1),(row,col+1),(row+1,col-1),(row+1,col),(row+1,col+1)]

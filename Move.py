@@ -246,21 +246,21 @@ class Move:
 
     def get_king_moves(game_state, row, col):
         moves=[]
-        possibleMoves=[(row-1,col),(row-1,col-1),(row-1,col+1),(row,col-1),(row,col+1),(row-1,col-1),(row-1,col),(row-1,col+1)]
+        possibleMoves=[(row-1,col-1),(row-1,col),(row-1,col+1),(row,col-1),(row,col+1),(row+1,col-1),(row+1,col),(row+1,col+1)]
         if game_state.next_player==GameState.cell_occupation_code_black: #if black player
             for move in possibleMoves:
                 if (0 <= move[0] < 8) and (0 <= move[1] < 8):
-                    if game_state.board[move[0]][move[1]] == GameState.cell_occupation_code_empty: #non capturing move
+                    if game_state.board[move[0]][move[1]][0] == GameState.cell_occupation_code_empty: #non capturing move
                         moves.append(Move(game_state, [row, col], [move[0],move[1]]))
-                    elif game_state.board[move[0]][move[1]]==GameState.cell_occupation_code_white: #capturing move
+                    elif game_state.board[move[0]][move[1]][0] == GameState.cell_occupation_code_white: #capturing move
                         moves.append(Move(game_state, [row, col],[move[0],move[1]]))
 
         if game_state.next_player==GameState.cell_occupation_code_white: #if white player
             for move in possibleMoves:
                 if (0 <= move[0] < 8) and (0 <= move[1] < 8):
-                    if game_state.board[move[0]][move[1]] == GameState.cell_occupation_code_empty: #non capturing move
+                    if game_state.board[move[0]][move[1]][0] == GameState.cell_occupation_code_empty: #non capturing move
                         moves.append(Move(game_state, [row, col], [move[0],move[1]]))
-                    elif game_state.board[move[0]][move[1]]==GameState.cell_occupation_code_black: #capturing move
+                    elif game_state.board[move[0]][move[1]][0] == GameState.cell_occupation_code_black: #capturing move
                         moves.append(Move(game_state, [row, col], [move[0],move[1]]))
         return moves
 

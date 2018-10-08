@@ -44,6 +44,15 @@ class GameState:
 
             self.board[move.from_row_col[i]][move.from_row_col[i+1]][0] = self.cell_occupation_code_empty
             self.board[move.from_row_col[i]][move.from_row_col[i+1]][1] = self.cell_piece_type_pawn
+
+            if (move.to_row_col[i] == 7 and
+                self.next_player == self.cell_occupation_code_black and
+                self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] == self.cell_piece_type_pawn):
+                self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] = self.cell_piece_type_promoted_pawn
+            if (move.to_row_col[i] == 0 and
+                self.next_player == self.cell_occupation_code_white and
+                self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] == self.cell_piece_type_pawn):
+                self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] = self.cell_piece_type_promoted_pawn
         
         if move.prev_game_state.next_player == self.cell_occupation_code_black:
             self.next_player = self.cell_occupation_code_white

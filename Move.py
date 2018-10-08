@@ -31,6 +31,8 @@ class Move:
             return Move.get_queen_moves(game_state, row, col)
         elif game_state.board[row][col][1] == GameState.cell_piece_type_king:
             return Move.get_king_moves(game_state, row, col)
+        elif game_state.board[row][col][1] == GameState.cell_piece_type_promoted_pawn:
+            return Move.get_promoted_pawn_moves(game_state, row, col)
 
     def get_pawn_moves(game_state, row, col):
         moves = []
@@ -220,7 +222,7 @@ class Move:
                 elif game_state.board[r][c][0] == GameState.cell_occupation_code_white:
                     break
             for r,c in zip(range(row+1,8,1),range(col-1,-1,-1)): #seacrhes diag3
-                if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
+                if game_state.board[r][c][0] == GameState.cell_occupation_code_empty: #non capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
                 elif game_state.board[r][c][0] == GameState.cell_occupation_code_black: #capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
@@ -265,6 +267,6 @@ class Move:
         return moves
 
     def get_promoted_pawn_moves(game_state, row, col):
-        return []
+        return Move.get_queen_moves(game_state, row, col)
 
 from GameState import GameState

@@ -79,91 +79,97 @@ class Move:
 
     def get_rook_moves(game_state, row, col): #excuse me for this awfully long function
         moves=[]
-        if self.next_player==GameState.cell_occupation_code_black: #if black player
-            for i in range(row,0,-1): #searches vertically, upwards
-                if game_state.board[i][col] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[i][col]==GameState.cell_occupation_code_white: #capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[i][col]==GameState.cell_occupation_code_black: #stop seaching if a black piece is found on that column
+        if game_state.next_player==GameState.cell_occupation_code_black: #if black player
+            for i in range(row-1,-1,-1): #searches vertically, upwards
+                if game_state.board[i][col][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [i, col]))
+                elif game_state.board[i][col][0] == GameState.cell_occupation_code_white: #capturing move
+                    moves.append(Move(game_state, [row, col], [i, col]))
                     break
-            for i in range(row,8,1): #searches vertically, downwards
-                if game_state.board[i][col] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[i][col]==GameState.cell_occupation_code_white: #capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[i][col]==GameState.cell_occupation_code_black: #stop seaching if a black piece is found on that column
+                elif game_state.board[i][col][0] == GameState.cell_occupation_code_black: #stop seaching if a black piece is found on that column
                     break
-            for i in range(col,8,1): #searches horizontally to the right of the piece
-                if game_state.board[row][i] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[row][i]==GameState.cell_occupation_code_white: #capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[row][i]==GameState.cell_occupation_code_black: #stop seaching if a black piece is found on that row
+            for i in range(row+1,8,1): #searches vertically, downwards
+                if game_state.board[i][col][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [i, col]))
+                elif game_state.board[i][col][0] == GameState.cell_occupation_code_white: #capturing move
+                    moves.append(Move(game_state, [row, col], [i, col]))
                     break
-            for i in range(col,0,-1): #searches horizontally to the left of the piece
-                if game_state.board[row][i] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[row][i]==GameState.cell_occupation_code_white: #capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[row][i]==GameState.cell_occupation_code_black: #stop seaching if a black piece is found on that row
+                elif game_state.board[i][col][0] == GameState.cell_occupation_code_black: #stop seaching if a black piece is found on that column
                     break
-
-
-        elif self.next_player==GameState.cell_occupation_code_white: #if white player
-            for i in range(row,0,-1): #searches vertically, upwards
-                if game_state.board[i][col] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[i][col]==GameState.cell_occupation_code_black: #capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[i][col]==GameState.cell_occupation_code_white: #stop seaching if a black piece is found on that column
+            for i in range(col+1,8,1): #searches horizontally to the right of the piece
+                if game_state.board[row][i][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [row, i]))
+                elif game_state.board[row][i][0] == GameState.cell_occupation_code_white: #capturing move
+                    moves.append(Move(game_state, [row, col], [row, i]))
                     break
-            for i in range(row,8,1): #searches vertically, downwards
-                if game_state.board[i][col] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[i][col]==GameState.cell_occupation_code_black: #capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[i][col]==GameState.cell_occupation_code_white: #stop seaching if a black piece is found on that column
+                elif game_state.board[row][i][0] == GameState.cell_occupation_code_black: #stop seaching if a black piece is found on that row
                     break
-            for i in range(col,8,1): #searches horizontally to the right of the piece
-                if game_state.board[row][i] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[row][i]==GameState.cell_occupation_code_black: #capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[row][i]==GameState.cell_occupation_code_white: #stop seaching if a black piece is found on that row
+            for i in range(col-1,-1,-1): #searches horizontally to the left of the piece
+                if game_state.board[row][i][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [row, i]))
+                elif game_state.board[row][i][0] == GameState.cell_occupation_code_white: #capturing move
+                    moves.append(Move(game_state, [row, col], [row, i]))
                     break
-            for i in range(col,0,-1): #searches horizontally to the left of the piece
-                if game_state.board[row][i] == GameState.cell_occupation_code_empty: #non capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[row][i]==GameState.cell_occupation_code_black: #capturing move
-                    moves.append(Move(game_state, [row, col], [i,col]))
-                elif game_state.board[row][i]==GameState.cell_occupation_code_white: #stop seaching if a black piece is found on that row
+                elif game_state.board[row][i][0] == GameState.cell_occupation_code_black: #stop seaching if a black piece is found on that row
+                    break
+        elif game_state.next_player == GameState.cell_occupation_code_white: #if white player
+            for i in range(row-1,-1,-1): #searches vertically, upwards
+                if game_state.board[i][col][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [i, col]))
+                elif game_state.board[i][col][0] == GameState.cell_occupation_code_black: #capturing move
+                    moves.append(Move(game_state, [row, col], [i, col]))
+                    break
+                elif game_state.board[i][col][0] == GameState.cell_occupation_code_white: #stop seaching if a black piece is found on that column
+                    break
+            for i in range(row+1,8,1): #searches vertically, downwards
+                if game_state.board[i][col][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [i, col]))
+                elif game_state.board[i][col][0] == GameState.cell_occupation_code_black: #capturing move
+                    moves.append(Move(game_state, [row, col], [i, col]))
+                    break
+                elif game_state.board[i][col][0] == GameState.cell_occupation_code_white: #stop seaching if a black piece is found on that column
+                    break
+            for i in range(col+1,8,1): #searches horizontally to the right of the piece
+                if game_state.board[row][i][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [row, i]))
+                elif game_state.board[row][i][0] == GameState.cell_occupation_code_black: #capturing move
+                    moves.append(Move(game_state, [row, col], [row, i]))
+                    break
+                elif game_state.board[row][i][0] == GameState.cell_occupation_code_white: #stop seaching if a black piece is found on that row
+                    break
+            for i in range(col-1,-1,-1): #searches horizontally to the left of the piece
+                if game_state.board[row][i][0] == GameState.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(game_state, [row, col], [row, i]))
+                elif game_state.board[row][i][0] == GameState.cell_occupation_code_black: #capturing move
+                    moves.append(Move(game_state, [row, col], [row, i]))
+                    break
+                elif game_state.board[row][i][0] == GameState.cell_occupation_code_white: #stop seaching if a black piece is found on that row
                     break
         return moves
 
     def get_knight_moves(game_state, row, col):
         moves=[]
         possibleMoves=[[row-1,col-2],[row-2,col-1],[row-1,col+2],[row-2,col+1],[row+1,col-2],[row+2,col-1],[row+1,col+2],[row+2,col+1]]
-        if self.next_player==GameState.cell_occupation_code_black: #if black player
+        if game_state.next_player==GameState.cell_occupation_code_black: #if black player
             for move in possibleMoves:
                 if (0 < move[0] < 8) and (0< move[1] < 8):
                     if game_state.board[move[0]][move[1]] == GameState.cell_occupation_code_empty: #non capturing move
                         moves.append(Move(game_state, [row, col], [move[0],move[1]]))
                     elif game_state.board[move[0]][move[1]]==GameState.cell_occupation_code_white: #capturing move
-                        moves.append(Move(game_state, [row, col],[move[0],move[1]]))))
+                        moves.append(Move(game_state, [row, col],[move[0],move[1]]))
 
-        if self.next_player==GameState.cell_occupation_code_white: #if white player
+        if game_state.next_player==GameState.cell_occupation_code_white: #if white player
             for move in possibleMoves:
-                if (0 < move[0] < 8) and (0< move[1] < 8):
+                if (0 <= move[0] < 8) and (0 <= move[1] < 8):
                     if game_state.board[move[0]][move[1]] == GameState.cell_occupation_code_empty: #non capturing move
-                        moves.append(Move(game_state, [row, col], [move[0],move[1]]))))
+                        moves.append(Move(game_state, [row, col], [move[0],move[1]]))
                     elif game_state.board[move[0]][move[1]]==GameState.cell_occupation_code_black: #capturing move
-                        moves.append(Move(game_state, [row, col], [move[0],move[1]]))))
+                        moves.append(Move(game_state, [row, col], [move[0],move[1]]))
         return moves
 
     def get_bishop_moves(game_state, row, col):
         moves=[]
-        if self.next_player==GameState.cell_occupation_code_black: #if black player
+        if game_state.next_player==GameState.cell_occupation_code_black: #if black player
             for r,c in zip(range(row,0,-1),range(col,0,-1)): #seacrhes diag1
                 if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
@@ -192,7 +198,7 @@ class Move:
                     moves.append(Move(game_state, [row, col], [r,c]))
                 elif game_state.board[r][c]==GameState.cell_occupation_code_black:
                     break
-        if self.next_player==GameState.cell_occupation_code_white: #if black player
+        if game_state.next_player==GameState.cell_occupation_code_white: #if black player
             for r,c in zip(range(row,0,-1),range(col,0,-1)): #seacrhes diag1
                 if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
@@ -213,7 +219,7 @@ class Move:
                 elif game_state.board[r][c]==GameState.cell_occupation_code_black: #capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
                 elif game_state.board[r][c]==GameState.cell_occupation_code_white:
-
+                    break
             for r,c in zip(range(row,0,-1),range(col,8,1)): #seacrhes diag3
                 if game_state.board[r][c] == GameState.cell_occupation_code_empty: #non capturing move
                     moves.append(Move(game_state, [row, col], [r,c]))
@@ -225,29 +231,29 @@ class Move:
         return moves
 
     def get_queen_moves(game_state, row, col):
-        moves = get_rook_moves(game_state, row, col)
-        moves += get_bishop_moves(game_state, row, col)
+        moves = Move.get_rook_moves(game_state, row, col)
+        moves += Move.get_bishop_moves(game_state, row, col)
         return moves
 
 
     def get_king_moves(game_state, row, col):
         moves=[]
         possibleMoves=[(row-1,col),(row-1,col-1),(row-1,col+1),(row,col-1),(row,col+1),(row-1,col-1),(row-1,col),(row-1,col+1)]
-        if self.next_player==GameState.cell_occupation_code_black: #if black player
+        if game_state.next_player==GameState.cell_occupation_code_black: #if black player
             for move in possibleMoves:
-                if (0 < move[0] < 8) and (0< move[1] < 8):
+                if (0 <= move[0] < 8) and (0 <= move[1] < 8):
                     if game_state.board[move[0]][move[1]] == GameState.cell_occupation_code_empty: #non capturing move
                         moves.append(Move(game_state, [row, col], [move[0],move[1]]))
                     elif game_state.board[move[0]][move[1]]==GameState.cell_occupation_code_white: #capturing move
-                        moves.append(Move(game_state, [row, col],[move[0],move[1]]))))
+                        moves.append(Move(game_state, [row, col],[move[0],move[1]]))
 
-        if self.next_player==GameState.cell_occupation_code_white: #if white player
+        if game_state.next_player==GameState.cell_occupation_code_white: #if white player
             for move in possibleMoves:
-                if (0 < move[0] < 8) and (0< move[1] < 8):
+                if (0 <= move[0] < 8) and (0 <= move[1] < 8):
                     if game_state.board[move[0]][move[1]] == GameState.cell_occupation_code_empty: #non capturing move
-                        moves.append(Move(game_state, [row, col], [move[0],move[1]]))))
+                        moves.append(Move(game_state, [row, col], [move[0],move[1]]))
                     elif game_state.board[move[0]][move[1]]==GameState.cell_occupation_code_black: #capturing move
-                        moves.append(Move(game_state, [row, col], [move[0],move[1]]))))
+                        moves.append(Move(game_state, [row, col], [move[0],move[1]]))
         return moves
 
     def get_promoted_pawn_moves(game_state, row, col):

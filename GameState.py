@@ -35,7 +35,7 @@ class GameState:
                 self.board[row][col] = move.prev_game_state.board[row][col]
         
         for i in range(0, len(move.from_row_col), 2):
-            if move.from_rto_row_colow_col[i] < 0 or move.to_row_col[i+1] < 0:
+            if move.to_row_col[i] < 0 or move.to_row_col[i+1] < 0:
                 self.board[move.from_row_col[i]][move.from_row_col[i+1]][0] = self.cell_occupation_code_empty
                 self.board[move.from_row_col[i]][move.from_row_col[i+1]][1] = self.cell_piece_type_pawn
             
@@ -197,26 +197,6 @@ class GameState:
         print('  abcdefgh')
         print('')
 
-    def perform_move(self, move_str):
-        move_positions = move_str.split()
-        from_row_col = GameState.chess_position_str_to_row_col(
-            move_positions[0])
-        to_row_col = GameState.chess_position_str_to_row_col(move_positions[1])
-
-        if self.board[from_row_col[0]][from_row_col[1]][0] == self.next_player:
-            piece_type = self.board[from_row_col[0]][from_row_col[1]][1]
-            self.board[to_row_col[0]][to_row_col[1]][0] = self.next_player
-            self.board[to_row_col[0]][to_row_col[1]][1] = piece_type
-            self.board[from_row_col[0]][from_row_col[1]
-                                        ][0] = self.cell_occupation_code_empty
-            self.board[from_row_col[0]][from_row_col[1]
-                                        ][1] = self.cell_piece_type_pawn
-
-            if self.next_player == self.cell_occupation_code_white:
-                self.next_player = self.cell_occupation_code_black
-            elif self.next_player == self.cell_occupation_code_black:
-                self.next_player = self.cell_occupation_code_white
-
 if __name__ == "__main__":
     game_state = GameState()
     game_state.set_initial_state()
@@ -231,5 +211,3 @@ if __name__ == "__main__":
                     GameState.row_col_to_chess_position_str(moves[i].to_row_col[0], moves[i].to_row_col[1]))
         move_index = int(input())
         game_state.set_from_move(moves[move_index])
-        
-        

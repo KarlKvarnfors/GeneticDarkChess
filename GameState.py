@@ -1,6 +1,11 @@
 # for colorful printing
 from ansimarkup import ansiprint as print
-from Move import Move
+
+class Move:
+    def __init__(self, prev_game_state, from_row_col, to_row_col):
+        self.prev_game_state = prev_game_state
+        self.from_row_col = from_row_col
+        self.to_row_col = to_row_col
 
 class GameState:
 
@@ -45,6 +50,7 @@ class GameState:
             self.board[move.from_row_col[i]][move.from_row_col[i+1]][0] = self.cell_occupation_code_empty
             self.board[move.from_row_col[i]][move.from_row_col[i+1]][1] = self.cell_piece_type_pawn
 
+            # Pawn promotion
             if (move.to_row_col[i] == 7 and
                 self.next_player == self.cell_occupation_code_black and
                 self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] == self.cell_piece_type_pawn):
@@ -193,6 +199,28 @@ class GameState:
         position_str = position_str + str(8 - row)
         return position_str
 
+    def is_end_of_game(self):
+        if self.is_white_win() or self.is_black_win():
+            return True
+        #TODO: Check for draw
+        return False
+
+    def is_white_win(self):
+        for row in range(self.board_size):
+            for col in range(self.board_size):
+                if (self.board[row][col][0] == GameState.cell_occupation_code_black and
+                    self.board[row][col][1] == GameState.cell_piece_type_king):
+                    return False
+        return True
+
+    def is_black_win(self):
+        for row in range(self.board_size):
+            for col in range(self.board_size):
+                if (self.board[row][col][0] == GameState.cell_occupation_code_white and
+                    self.board[row][col][1] == GameState.cell_piece_type_king):
+                    return False
+        return True
+
     def print_board(self):
         print('')
         print('  abcdefgh')
@@ -214,7 +242,7 @@ class GameState:
                 if self.board[row][col][0] == self.next_player:
                     visible_cells.add((row, col))
         
-        moves = Move.get_possible_moves(self)
+        moves = self.get_possible_moves()
         for move in moves:
             for i in range(0, len(move.from_row_col), 2):
                 if move.to_row_col[i] >= 0 or move.to_row_col[i+1] >= 0:
@@ -232,6 +260,269 @@ class GameState:
 
         return fog_of_war_state
 
+
+    def get_possible_moves(self):
+        moves = []
+        for row in range(self.board_size):
+            for col in range(self.board_size):
+                piece_moves = self.get_possible_moves_for_piece(row, col)
+                if len(piece_moves) > 0:
+                    moves += piece_moves
+        return moves
+
+    def get_possible_moves_for_piece(self, row, col):
+        if self.board[row][col][0] != self.next_player:
+            return []
+
+        if self.board[row][col][1] == self.cell_piece_type_pawn:
+            return self.get_pawn_moves(row, col)
+        elif self.board[row][col][1] == self.cell_piece_type_rook:
+            return self.get_rook_moves(row, col)
+        elif self.board[row][col][1] == self.cell_piece_type_knight:
+            return self.get_knight_moves(row, col)
+        elif self.board[row][col][1] == self.cell_piece_type_bishop:
+            return self.get_bishop_moves(row, col)
+        elif self.board[row][col][1] == self.cell_piece_type_queen:
+            return self.get_queen_moves(row, col)
+        elif self.board[row][col][1] == self.cell_piece_type_king:
+            return self.get_king_moves(row, col)
+        elif self.board[row][col][1] == self.cell_piece_type_promoted_pawn:
+            return self.get_promoted_pawn_moves(row, col)
+
+    def get_pawn_moves(self, row, col):
+        moves = []
+
+        # Initial double distance move
+        if (row == 1 and
+           self.board[row][col][0] == self.cell_occupation_code_black and
+           self.board[row+1][col][0] == self.cell_occupation_code_empty and
+           self.board[row+2][col][0] == self.cell_occupation_code_empty):
+            moves.append(Move(self, [row, col], [row+2,col]))
+        if (row == 6 and
+           self.board[row][col][0] == self.cell_occupation_code_white and
+           self.board[row-1][col][0] == self.cell_occupation_code_empty and
+           self.board[row-2][col][0] == self.cell_occupation_code_empty):
+            moves.append(Move(self, [row, col], [row-2,col]))
+
+        # Regular forward move
+        if (row < 7 and
+           self.board[row][col][0] == self.cell_occupation_code_black and
+           self.board[row+1][col][0] == self.cell_occupation_code_empty):
+            moves.append(Move(self, [row, col], [row+1,col]))
+        if (row > 0 and
+           self.board[row][col][0] == self.cell_occupation_code_white and
+           self.board[row-1][col][0] == self.cell_occupation_code_empty):
+            moves.append(Move(self, [row, col], [row-1,col]))
+
+        # Capture
+        if (row < 7 and col < 7 and
+           self.board[row][col][0] == self.cell_occupation_code_black and
+           self.board[row+1][col+1][0] == self.cell_occupation_code_white):
+            moves.append(Move(self, [row, col], [row+1, col+1]))
+        if (row < 7 and col > 0 and
+           self.board[row][col][0] == self.cell_occupation_code_black and
+           self.board[row+1][col-1][0] == self.cell_occupation_code_white):
+            moves.append(Move(self, [row, col], [row+1, col-1]))
+        if (row > 0 and col < 7 and
+           self.board[row][col][0] == self.cell_occupation_code_white and
+           self.board[row-1][col+1][0] == self.cell_occupation_code_black):
+            moves.append(Move(self, [row, col], [row-1, col+1]))
+        if (row > 0 and col > 0 and
+           self.board[row][col][0] == self.cell_occupation_code_white and
+           self.board[row-1][col-1][0] == self.cell_occupation_code_black):
+            moves.append(Move(self, [row, col], [row-1, col-1]))
+
+        return moves
+
+    def get_rook_moves(self, row, col): #excuse me for this awfully long function
+        moves=[]
+        if self.next_player==self.cell_occupation_code_black: #if black player
+            for i in range(row-1,-1,-1): #searches vertically, upwards
+                if self.board[i][col][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [i, col]))
+                elif self.board[i][col][0] == self.cell_occupation_code_white: #capturing move
+                    moves.append(Move(self, [row, col], [i, col]))
+                    break
+                elif self.board[i][col][0] == self.cell_occupation_code_black: #stop seaching if a black piece is found on that column
+                    break
+            for i in range(row+1,8,1): #searches vertically, downwards
+                if self.board[i][col][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [i, col]))
+                elif self.board[i][col][0] == self.cell_occupation_code_white: #capturing move
+                    moves.append(Move(self, [row, col], [i, col]))
+                    break
+                elif self.board[i][col][0] == self.cell_occupation_code_black: #stop seaching if a black piece is found on that column
+                    break
+            for i in range(col+1,8,1): #searches horizontally to the right of the piece
+                if self.board[row][i][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [row, i]))
+                elif self.board[row][i][0] == self.cell_occupation_code_white: #capturing move
+                    moves.append(Move(self, [row, col], [row, i]))
+                    break
+                elif self.board[row][i][0] == self.cell_occupation_code_black: #stop seaching if a black piece is found on that row
+                    break
+            for i in range(col-1,-1,-1): #searches horizontally to the left of the piece
+                if self.board[row][i][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [row, i]))
+                elif self.board[row][i][0] == self.cell_occupation_code_white: #capturing move
+                    moves.append(Move(self, [row, col], [row, i]))
+                    break
+                elif self.board[row][i][0] == self.cell_occupation_code_black: #stop seaching if a black piece is found on that row
+                    break
+        elif self.next_player == self.cell_occupation_code_white: #if white player
+            for i in range(row-1,-1,-1): #searches vertically, upwards
+                if self.board[i][col][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [i, col]))
+                elif self.board[i][col][0] == self.cell_occupation_code_black: #capturing move
+                    moves.append(Move(self, [row, col], [i, col]))
+                    break
+                elif self.board[i][col][0] == self.cell_occupation_code_white: #stop seaching if a black piece is found on that column
+                    break
+            for i in range(row+1,8,1): #searches vertically, downwards
+                if self.board[i][col][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [i, col]))
+                elif self.board[i][col][0] == self.cell_occupation_code_black: #capturing move
+                    moves.append(Move(self, [row, col], [i, col]))
+                    break
+                elif self.board[i][col][0] == self.cell_occupation_code_white: #stop seaching if a black piece is found on that column
+                    break
+            for i in range(col+1,8,1): #searches horizontally to the right of the piece
+                if self.board[row][i][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [row, i]))
+                elif self.board[row][i][0] == self.cell_occupation_code_black: #capturing move
+                    moves.append(Move(self, [row, col], [row, i]))
+                    break
+                elif self.board[row][i][0] == self.cell_occupation_code_white: #stop seaching if a black piece is found on that row
+                    break
+            for i in range(col-1,-1,-1): #searches horizontally to the left of the piece
+                if self.board[row][i][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [row, i]))
+                elif self.board[row][i][0] == self.cell_occupation_code_black: #capturing move
+                    moves.append(Move(self, [row, col], [row, i]))
+                    break
+                elif self.board[row][i][0] == self.cell_occupation_code_white: #stop seaching if a black piece is found on that row
+                    break
+        return moves
+
+    def get_knight_moves(self, row, col):
+        moves=[]
+        possibleMoves=[[row-1,col-2],[row-2,col-1],[row-1,col+2],[row-2,col+1],[row+1,col-2],[row+2,col-1],[row+1,col+2],[row+2,col+1]]
+        if self.next_player == self.cell_occupation_code_black: #if black player
+            for move in possibleMoves:
+                if (0 <= move[0] < 8) and (0 <= move[1] < 8):
+                    if self.board[move[0]][move[1]][0] == self.cell_occupation_code_empty: #non capturing move
+                        moves.append(Move(self, [row, col], [move[0],move[1]]))
+                    elif self.board[move[0]][move[1]][0] == self.cell_occupation_code_white: #capturing move
+                        moves.append(Move(self, [row, col],[move[0],move[1]]))
+
+        if self.next_player == self.cell_occupation_code_white: #if white player
+            for move in possibleMoves:
+                if (0 <= move[0] < 8) and (0 <= move[1] < 8):
+                    if self.board[move[0]][move[1]][0] == self.cell_occupation_code_empty: #non capturing move
+                        moves.append(Move(self, [row, col], [move[0],move[1]]))
+                    elif self.board[move[0]][move[1]][0] == self.cell_occupation_code_black: #capturing move
+                        moves.append(Move(self, [row, col], [move[0],move[1]]))
+        return moves
+    
+    def get_bishop_moves(self, row, col):
+        moves=[]
+        if self.next_player == self.cell_occupation_code_black: #if black player
+            for r,c in zip(range(row-1,-1,-1),range(col-1,-1,-1)): #seacrhes diag1
+                if self.board[r][c][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                elif self.board[r][c][0] == self.cell_occupation_code_white: #capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                    break
+                elif self.board[r][c][0] == self.cell_occupation_code_black:
+                    break
+            for r,c in zip(range(row+1,8,1),range(col+1,8,1)): #seacrhes diag2
+                if self.board[r][c][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                elif self.board[r][c][0] == self.cell_occupation_code_white: #capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                    break
+                elif self.board[r][c][0] == self.cell_occupation_code_black:
+                    break
+            for r,c in zip(range(row+1,8,1),range(col-1,-1,-1)): #seacrhes diag3
+                if self.board[r][c][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                elif self.board[r][c][0] == self.cell_occupation_code_white: #capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                    break
+                elif self.board[r][c][0] == self.cell_occupation_code_black:
+                    break
+            for r,c in zip(range(row-1,-1,-1),range(col+1,8,1)): #seacrhes diag3
+                if self.board[r][c][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                elif self.board[r][c][0] == self.cell_occupation_code_white: #capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                    break
+                elif self.board[r][c][0] == self.cell_occupation_code_black:
+                    break
+        if self.next_player == self.cell_occupation_code_white: #if black player
+            for r,c in zip(range(row-1,-1,-1),range(col-1,-1,-1)): #seacrhes diag1
+                if self.board[r][c][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                elif self.board[r][c][0] == self.cell_occupation_code_black: #capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                    break
+                elif self.board[r][c][0] == self.cell_occupation_code_white:
+                    break
+            for r,c in zip(range(row+1,8,1),range(col+1,8,1)): #seacrhes diag2
+                if self.board[r][c][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                elif self.board[r][c][0] == self.cell_occupation_code_black: #capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                    break
+                elif self.board[r][c][0] == self.cell_occupation_code_white:
+                    break
+            for r,c in zip(range(row+1,8,1),range(col-1,-1,-1)): #seacrhes diag3
+                if self.board[r][c][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                elif self.board[r][c][0] == self.cell_occupation_code_black: #capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                    break
+                elif self.board[r][c][0] == self.cell_occupation_code_white:
+                    break
+            for r,c in zip(range(row-1,-1,-1),range(col+1,8,1)): #seacrhes diag3
+                if self.board[r][c][0] == self.cell_occupation_code_empty: #non capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                elif self.board[r][c][0] == self.cell_occupation_code_black: #capturing move
+                    moves.append(Move(self, [row, col], [r,c]))
+                    break
+                elif self.board[r][c][0] == self.cell_occupation_code_white:
+                    break
+
+        return moves
+
+    def get_queen_moves(self, row, col):
+        moves = self.get_rook_moves(row, col)
+        moves += self.get_bishop_moves(row, col)
+        return moves
+
+    def get_king_moves(self, row, col):
+        moves=[]
+        possibleMoves=[(row-1,col-1),(row-1,col),(row-1,col+1),(row,col-1),(row,col+1),(row+1,col-1),(row+1,col),(row+1,col+1)]
+        if self.next_player==self.cell_occupation_code_black: #if black player
+            for move in possibleMoves:
+                if (0 <= move[0] < 8) and (0 <= move[1] < 8):
+                    if self.board[move[0]][move[1]][0] == self.cell_occupation_code_empty: #non capturing move
+                        moves.append(Move(self, [row, col], [move[0],move[1]]))
+                    elif self.board[move[0]][move[1]][0] == self.cell_occupation_code_white: #capturing move
+                        moves.append(Move(self, [row, col],[move[0],move[1]]))
+
+        if self.next_player==self.cell_occupation_code_white: #if white player
+            for move in possibleMoves:
+                if (0 <= move[0] < 8) and (0 <= move[1] < 8):
+                    if self.board[move[0]][move[1]][0] == self.cell_occupation_code_empty: #non capturing move
+                        moves.append(Move(self, [row, col], [move[0],move[1]]))
+                    elif self.board[move[0]][move[1]][0] == self.cell_occupation_code_black: #capturing move
+                        moves.append(Move(self, [row, col], [move[0],move[1]]))
+        return moves
+
+    def get_promoted_pawn_moves(self, row, col):
+        return self.get_queen_moves(row, col)
+
 if __name__ == "__main__":
     game_state = GameState()
     game_state.set_initial_state()
@@ -239,10 +530,11 @@ if __name__ == "__main__":
     while True:
         game_state.generate_fog_of_war_state().print_board()
 
-        moves = Move.get_possible_moves(game_state)
+        moves = game_state.get_possible_moves()
         print("Select a move: ")
         for i in range(len(moves)):
             print(str(i) + ': ' +  GameState.row_col_to_chess_position_str(moves[i].from_row_col[0], moves[i].from_row_col[1]) + ' -> ' + 
                     GameState.row_col_to_chess_position_str(moves[i].to_row_col[0], moves[i].to_row_col[1]))
         move_index = int(input())
         game_state.set_from_move(moves[move_index])
+

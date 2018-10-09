@@ -37,7 +37,8 @@ class GameState:
     def set_from_move(self, move):
         for row in range(self.board_size):
             for col in range(self.board_size):
-                self.board[row][col] = move.prev_game_state.board[row][col]
+                self.board[row][col][0] = move.prev_game_state.board[row][col][0]
+                self.board[row][col][1] = move.prev_game_state.board[row][col][1]
         
         for i in range(0, len(move.from_row_col), 2):
             if move.to_row_col[i] < 0 or move.to_row_col[i+1] < 0:

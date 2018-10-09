@@ -1,7 +1,6 @@
 from GameState import GameState
 
 def player_heuristic(game_state, weights, player):
-
     number_of_pieces = 0
     for row in range(game_state.board_size):
             for col in range(game_state.board_size):

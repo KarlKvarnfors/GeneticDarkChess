@@ -10,13 +10,17 @@ def player_heuristic(game_state, weights, player):
 
     return weights[0] * number_of_pieces
 
+# returns the k-th bernstein polynomial in base n
+def bernstein(k, n):
+	return lambda x : nCr(n,k) * (x**k) * ( (1-x)**(n-k) )
+
 def bernsteinweight_per_heuristic(nr_of_pieces, basis, degree):
     t=nr_of_pieces/32
     #assuming the bernstein basis is 3:
     b=basis
     d=degree
-    bernsteinweight= nCr(b,d) * (t**d)*((1-t)**(b-1))
-    return bernsteinweight
+    bernsteinweight = bernstein(b, d)
+    return bernsteinweight(t)
 
 def nCr(n,r):
     f = math.factorial

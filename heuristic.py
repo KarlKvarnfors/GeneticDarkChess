@@ -1,4 +1,5 @@
 from GameState import GameState
+import math
 
 def player_heuristic(game_state, weights, player):
     number_of_pieces = 0
@@ -8,6 +9,19 @@ def player_heuristic(game_state, weights, player):
                     number_of_pieces += 1
 
     return weights[0] * number_of_pieces
+
+def bernsteinweight_per_heuristic(nr_of_pieces, basis, degree):
+    t=nr_of_pieces/32
+    #assuming the bernstein basis is 3:
+    b=basis
+    d=degree
+    bernsteinweight= nCr(b,d) * (t**d)*((1-t)**(b-1))
+    return bernsteinweight
+
+def nCr(n,r):
+    f = math.factorial
+    return f(n) / f(r) / f(n-r)
+
 
 def heuristic(game_state, weights):
     other_player = GameState.cell_occupation_code_empty

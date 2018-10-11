@@ -33,17 +33,34 @@ class GameState:
             self.board_size)] for y in range(self.board_size)]
 
         self.next_player = self.cell_occupation_code_white
+        self.moves_until_draw = 50
+        self.captured_white_pieces = []
+        self.captured_black_pieces = []
     
     def set_from_move(self, move):
         for row in range(self.board_size):
             for col in range(self.board_size):
                 self.board[row][col][0] = move.prev_game_state.board[row][col][0]
                 self.board[row][col][1] = move.prev_game_state.board[row][col][1]
+
+        self.moves_until_draw = move.prev_game_state.moves_until_draw - 1
+        self.captured_white_pieces = [piece for piece in move.prev_game_state.captured_white_pieces]
+        self.captured_black_pieces = [piece for piece in move.prev_game_state.captured_black_pieces]
         
         for i in range(0, len(move.from_row_col), 2):
             if move.to_row_col[i] < 0 or move.to_row_col[i+1] < 0:
                 self.board[move.from_row_col[i]][move.from_row_col[i+1]][0] = self.cell_occupation_code_empty
                 self.board[move.from_row_col[i]][move.from_row_col[i+1]][1] = self.cell_piece_type_pawn
+
+            if (move.prev_game_state.board[move.from_row_col[i]][move.from_row_col[i+1]][1] == self.cell_piece_type_pawn or
+                move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][0] != self.cell_occupation_code_empty):
+                self.moves_until_draw = 50         
+
+            if move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][0] != self.cell_occupation_code_empty:
+                if move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][0] == self.cell_occupation_code_white:
+                    self.captured_white_pieces.append(move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][1])
+                elif move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][0] == self.cell_occupation_code_black:
+                    self.captured_black_pieces.append(move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][1])
             
             self.board[move.to_row_col[i]][move.to_row_col[i+1]][0] = move.prev_game_state.board[move.from_row_col[i]][move.from_row_col[i+1]][0]
             self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] = move.prev_game_state.board[move.from_row_col[i]][move.from_row_col[i+1]][1]
@@ -112,38 +129,40 @@ class GameState:
         self.board[7][7] = [self.cell_occupation_code_white,
                             self.cell_piece_type_rook]
 
+        self.moves_until_draw = 50
+        self.captured_white_pieces = []
+        self.captured_black_pieces = []
+
         self.next_player = self.cell_occupation_code_white
 
     # def get_fogged_state(self, player):
 
-    def get_cell_output_string(self, row, col):
-        occupation_code = self.board[row][col][0]
-        piece_type = self.board[row][col][1]
+    def get_cell_output_string(occupation_code, piece_type):
 
-        if occupation_code == self.cell_occupation_code_empty:
+        if occupation_code == GameState.cell_occupation_code_empty:
             return '.'
-        elif occupation_code == self.cell_occupation_code_fog:
+        elif occupation_code == GameState.cell_occupation_code_fog:
             return '<fg #888888>X</fg #888888>'
 
         piece_string = ''
-        if piece_type == self.cell_piece_type_pawn:
+        if piece_type == GameState.cell_piece_type_pawn:
             piece_string = 'p'
-        elif piece_type == self.cell_piece_type_rook:
+        elif piece_type == GameState.cell_piece_type_rook:
             piece_string = 'r'
-        elif piece_type == self.cell_piece_type_knight:
+        elif piece_type == GameState.cell_piece_type_knight:
             piece_string = 'n'
-        elif piece_type == self.cell_piece_type_bishop:
+        elif piece_type == GameState.cell_piece_type_bishop:
             piece_string = 'b'
-        elif piece_type == self.cell_piece_type_queen:
+        elif piece_type == GameState.cell_piece_type_queen:
             piece_string = 'q'
-        elif piece_type == self.cell_piece_type_king:
+        elif piece_type == GameState.cell_piece_type_king:
             piece_string = 'k'
-        elif piece_type == self.cell_piece_type_promoted_pawn:
+        elif piece_type == GameState.cell_piece_type_promoted_pawn:
             piece_string = 'P'
 
-        if occupation_code == self.cell_occupation_code_white:
+        if occupation_code == GameState.cell_occupation_code_white:
             return piece_string
-        elif occupation_code == self.cell_occupation_code_black:
+        elif occupation_code == GameState.cell_occupation_code_black:
             return '<red>' + piece_string + '</red>'
 
     def chess_position_str_to_row_col(position_str):
@@ -201,9 +220,8 @@ class GameState:
         return position_str
 
     def is_end_of_game(self):
-        if self.is_white_win() or self.is_black_win():
+        if self.is_white_win() or self.is_black_win() or self.moves_until_draw == 0:
             return True
-        #TODO: Check for draw
         return False
 
     def is_white_win(self):
@@ -229,11 +247,26 @@ class GameState:
         for row in range(self.board_size):
             print(8-row, end=' ')
             for col in range(self.board_size):
-                print(self.get_cell_output_string(row, col), end='')
+                print(GameState.get_cell_output_string(self.board[row][col][0], self.board[row][col][1]), end='')
             print(' ' + str(8-row))
         print('')
         print('  abcdefgh')
         print('')
+        print('Next player: ', end='')
+        if self.next_player == self.cell_occupation_code_white:
+            print('white')
+        else:
+            print('<red>black</red>')
+        print('Moves until draw: ' + str(self.moves_until_draw))
+        print('Captured white pieces: [', end='')
+        for captured_white_piece in self.captured_white_pieces:
+            print(GameState.get_cell_output_string(self.cell_occupation_code_white, captured_white_piece), end=',')
+        print("]")
+
+        print('Captured black pieces: [', end='')
+        for captured_black_piece in self.captured_black_pieces:
+            print(GameState.get_cell_output_string(self.cell_occupation_code_black, captured_black_piece), end=',')
+        print("]")
 
     def generate_fog_of_war_state(self):
         
@@ -251,6 +284,14 @@ class GameState:
 
         fog_of_war_state = GameState()
         fog_of_war_state.next_player = self.next_player
+        fog_of_war_state.moves_until_draw = self.moves_until_draw
+
+        fog_of_war_state.captured_white_pieces = []
+        fog_of_war_state.captured_black_pieces = []
+        for i in range(len(self.captured_white_pieces)):
+            fog_of_war_state.captured_white_pieces.append(self.captured_white_pieces[i])
+        for i in range(len(self.captured_black_pieces)):
+            fog_of_war_state.captured_black_pieces.append(self.captured_black_pieces[i])
 
         for row in range(self.board_size):
             for col in range(self.board_size):

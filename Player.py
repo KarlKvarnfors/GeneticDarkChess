@@ -23,8 +23,11 @@ class Player:
             best_move = None
             for move in possible_moves:
                 next_state = GameState()
-                next_state.set_from_move(move)
-                move_score = h(next_state.generate_fog_of_war_state(), self.heuristic_weights)
+                fogged_move = Move(game_state.generate_fog_of_war_state(), 
+                                        [move.from_row_col[0], move.from_row_col[1]], 
+                                        [move.to_row_col[0], move.to_row_col[1]])
+                next_state.set_from_move(fogged_move)
+                move_score = h(next_state, self.heuristic_weights)
                 if move_score > best_score:
                     best_score = move_score
                     best_move = move

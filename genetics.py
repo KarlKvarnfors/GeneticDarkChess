@@ -59,7 +59,7 @@ class Chromosome:
             if(q < p):
                 self.mutate_bit(flip_bit, i)
                 # cout +=1
-        # print "bits flipped : ", cout
+        # print("bits flipped : ", cout)
         # Edge case scenario : normalise the n-1 first weights
         weights = self.to_weights(bernstein_basis_order)
         for j in range(weights.shape[1]):
@@ -118,10 +118,10 @@ if __name__ == "__main__":
                     Individual([Chromosome(),
                                 Chromosome()],
                                 args.n)         ]
-    print "number of heuristics implemented : ", len(HEURISTICS)
-    print "number of individuals who are going to play against each other : ",len(individuals)
+    print("number of heuristics implemented : ", len(HEURISTICS))
+    print("number of individuals who are going to play against each other : ",len(individuals))
     for indiv in individuals:
-        print "\nindividual ", indiv
+        print("\nindividual ", indiv)
         for chromosome in indiv.chromosomes:
             # generate a random set of weights for the chromosome
             weights_compressed = [[0]*pol_n]* (len(HEURISTICS)-1)
@@ -131,16 +131,16 @@ if __name__ == "__main__":
                     W_h[i] = max(0,1 -random.random() -tmp_w[i])
                     tmp_w[i] = tmp_w[i] + W_h[i]
             chromosome.set_genes(numpy.array(weights_compressed))
-            print "with chromosome weights : ",chromosome.to_weights(args.n)
+            print("with chromosome weights : ",chromosome.to_weights(args.n))
 
-    print "\nwill play against each other : "
+    print("\nwill play against each other : ")
 
     import play_game
     from GameState import GameState
-    print GameState.cell_occupation_code_white
-    print GameState.cell_occupation_code_black
-    print individuals[0]
-    print individuals[1]
+    print(GameState.cell_occupation_code_white)
+    print(GameState.cell_occupation_code_black)
+    print(individuals[0])
+    print(individuals[1])
     winner = play_game.play_game (  individuals[0].get_player(GameState.cell_occupation_code_white) ,
                                     individuals[1].get_player(GameState.cell_occupation_code_black) )
     if winner is white_player:
@@ -149,4 +149,4 @@ if __name__ == "__main__":
         print("individual 2 won!")
     else:
         print("It's a draw!")
-    # print args.accumulate(args.integers)
+    # print(args.accumulate(args.integers))

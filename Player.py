@@ -33,7 +33,11 @@ class Player:
             game_state.generate_fog_of_war_state().print_board()
             print("Select a move: ")
             for i in range(len(possible_moves)):
-                print(str(i) + ': ' +  GameState.row_col_to_chess_position_str(possible_moves[i].from_row_col[0], possible_moves[i].from_row_col[1]) + ' -> ' +
-                        GameState.row_col_to_chess_position_str(possible_moves[i].to_row_col[0], possible_moves[i].to_row_col[1]))
+                print(str(i) + ': ' +
+                    GameState.row_col_to_chess_position_str(possible_moves[i].from_row_col[0],
+                                                            possible_moves[i].from_row_col[1]) +
+                    ' -> ' +
+                    GameState.row_col_to_chess_position_str(possible_moves[i].  to_row_col[0],
+                                                            possible_moves[i].  to_row_col[1]))
             move_index = int(input())
             return possible_moves[move_index]

@@ -40,7 +40,7 @@ def bernstein(k, n):
     return lambda x : nCr(n,k) * (x**k) * ( (1-x)**(n-k) )
 
 def get_progress(game_state):
-    # TODO : calcualte according to captured units, and not units present
+    # TODO : calculate according to captured units, and not units present
     #        on the board (cannot see all the ennemy pieces)
     number_of_pieces = 0
     for row in range(game_state.board_size):

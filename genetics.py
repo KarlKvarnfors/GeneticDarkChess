@@ -111,10 +111,12 @@ class Individual:
 
     def mate_with(self, partner):
         chromosomes = [
-            self   .chromosomes[random.randint(0,1)].random_mutations(),
-            partner.chromosomes[random.randint(0,1)].random_mutations()
+            self   .chromosomes[random.randint(0,1)],
+            partner.chromosomes[random.randint(0,1)]
         ]
-        return Individual(chromosomes)
+        for chromosome in chromosomes:
+            chromosome.random_mutations(self.basis_n)
+        return Individual(chromosomes, self.basis_n)
 
     def get_player(self, player_id):
         return Player.Player(True, player_id, self.get_weights(False))
@@ -141,7 +143,7 @@ class Population():
             for i2 in individuals:
                 if i1 is not i2:
                     winner = play_game(i1.get_player(GameState.cell_occupation_code_white),
-                                                 i2.get_player(GameState.cell_occupation_code_black))
+                                       i2.get_player(GameState.cell_occupation_code_black))
                     if winner is i1:
                         i1.score += 3
                         i2.score += 0
@@ -180,8 +182,12 @@ class Population():
         max_score = self.individuals[-1].score
         while birthCount < deathToll:
             for k1, i1 in enumerate(self.individuals):
+                if birthCount >= deathToll:
+                    break
                 for k2, i2 in enumerate(self.individuals):
-                    if (i1 is not i2) and (not mating[k1]) and (not mating[k2]):
+                    if birthCount >= deathToll:
+                        break
+                    elif (i1 is not i2) and (not mating[k1]) and (not mating[k2]):
                         q = i1.score*i2.score/max_score**2
                         p = random.uniform(0,1)**2
                         if p < q :
@@ -190,12 +196,12 @@ class Population():
                             birthCount += 1
                             new_individuals.append(i1.mate_with(i2))
         self.individuals.extend(new_individuals)
+        return new_individuals
 
 
 if __name__ == "__main__":
     import argparse
     import sys
-
 
     parser = argparse.ArgumentParser(description='Make two Individuals play against each other.')
     parser.add_argument('-n', type=int, default=0,
@@ -209,12 +215,13 @@ if __name__ == "__main__":
     pol_n = args.n+1 #number of polynomes
     individuals = [ Individual([Chromosome(), Chromosome()], args.n) for _ in range(args.i) ]
     print("number of heuristics implemented : ", len(HEURISTICS))
-    print("number of individuals who are going to play against each other : ",len(individuals))
-    print(individuals)
     for indiv in individuals:
         print("\nindividual ", indiv, " has these weights seared into its DNA : ")
-        for chromosome in indiv.chromosomes:
-            print(chromosome.to_weights(args.n))
+        for k, chromosome in enumerate(indiv.chromosomes):
+            if indiv.dom is chromosome:
+                print("chromosome ", k, ": ", chromosome.to_weights(args.n)," <- dominant")
+            else:
+                print("chromosome ", k, ": ", chromosome.to_weights(args.n))
 
     print("\nwill play against each other : ")
     pop = Population(individuals)
@@ -230,6 +237,14 @@ if __name__ == "__main__":
     for i in pop.individuals:
         if i.alive:
             print(i," has survived with his score of ", i.score)
-
+    print("proceeding forth with a thorough copulation to compensate for the recent genocide")
+    new_individs = pop.naturalyRenew(deathToll)
+    for indiv in new_individs:
+        print("\nNewborn ", indiv, " has these weights seared into its DNA : ")
+        for k, chromosome in enumerate(indiv.chromosomes):
+            if indiv.dom is chromosome:
+                print("chromosome ", k, ": ", chromosome.to_weights(args.n)," <- dominant")
+            else:
+                print("chromosome ", k, ": ", chromosome.to_weights(args.n))
 
     # print(args.accumulate(args.integers))

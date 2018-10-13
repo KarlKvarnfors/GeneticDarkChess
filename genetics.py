@@ -143,9 +143,9 @@ if __name__ == "__main__":
     print(individuals[1])
     winner = play_game.play_game (  individuals[0].get_player(GameState.cell_occupation_code_white) ,
                                     individuals[1].get_player(GameState.cell_occupation_code_black) )
-    if winner is white_player:
+    if winner is individuals[0]:
         print("individual 1 won!")
-    elif winner is black_player:
+    elif winner is individuals[1]:
         print("individual 2 won!")
     else:
         print("It's a draw!")

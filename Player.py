@@ -1,6 +1,7 @@
 from GameState import Move, GameState
-from heuristic import heuristic, number_of_heuristic_weights
+from heuristic import h, heuristic_weights_shape
 import random
+import numpy
 
 class Player:
     def __init__(self, is_ai_player, player_id, heuristic_weights):
@@ -10,11 +11,11 @@ class Player:
 
         # Generate random weights if no weights are provided
         if heuristic_weights is None:
-            self.heuristic_weights = [
+            self.heuristic_weights = numpy.array([
                 [
                     random.uniform(0,1) for _ in range(heuristic_weights_shape()[1])
                 ] for __ in range(heuristic_weights_shape()[0])
-            ]
+            ])
 
     def play(self, game_state, possible_moves):
         if self.is_ai_player:

@@ -1,5 +1,5 @@
 # for colorful printing
-from ansimarkup import ansiprint as print
+from ansimarkup import ansiprint # as print
 
 class Move:
     def __init__(self, prev_game_state, from_row_col, to_row_col):
@@ -33,18 +33,18 @@ class GameState:
             self.board_size)] for y in range(self.board_size)]
 
         self.next_player = self.cell_occupation_code_white
-    
+
     def set_from_move(self, move):
         for row in range(self.board_size):
             for col in range(self.board_size):
                 self.board[row][col][0] = move.prev_game_state.board[row][col][0]
                 self.board[row][col][1] = move.prev_game_state.board[row][col][1]
-        
+
         for i in range(0, len(move.from_row_col), 2):
             if move.to_row_col[i] < 0 or move.to_row_col[i+1] < 0:
                 self.board[move.from_row_col[i]][move.from_row_col[i+1]][0] = self.cell_occupation_code_empty
                 self.board[move.from_row_col[i]][move.from_row_col[i+1]][1] = self.cell_piece_type_pawn
-            
+
             self.board[move.to_row_col[i]][move.to_row_col[i+1]][0] = move.prev_game_state.board[move.from_row_col[i]][move.from_row_col[i+1]][0]
             self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] = move.prev_game_state.board[move.from_row_col[i]][move.from_row_col[i+1]][1]
 
@@ -60,7 +60,7 @@ class GameState:
                 self.next_player == self.cell_occupation_code_white and
                 self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] == self.cell_piece_type_pawn):
                 self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] = self.cell_piece_type_promoted_pawn
-        
+
         if move.prev_game_state.next_player == self.cell_occupation_code_black:
             self.next_player = self.cell_occupation_code_white
         elif move.prev_game_state.next_player == self.cell_occupation_code_white:
@@ -223,26 +223,26 @@ class GameState:
         return True
 
     def print_board(self):
-        print('')
-        print('  abcdefgh')
-        print('')
+        ansiprint('')
+        ansiprint('  abcdefgh')
+        ansiprint('')
         for row in range(self.board_size):
-            print(8-row, end=' ')
+            ansiprint(8-row, end=' ')
             for col in range(self.board_size):
-                print(self.get_cell_output_string(row, col), end='')
-            print(' ' + str(8-row))
-        print('')
-        print('  abcdefgh')
-        print('')
+                ansiprint(self.get_cell_output_string(row, col), end='')
+            ansiprint(' ' + str(8-row))
+        ansiprint('')
+        ansiprint('  abcdefgh')
+        ansiprint('')
 
     def generate_fog_of_war_state(self):
-        
+
         visible_cells = set()
         for row in range(self.board_size):
             for col in range(self.board_size):
                 if self.board[row][col][0] == self.next_player:
                     visible_cells.add((row, col))
-        
+
         moves = self.get_possible_moves()
         for move in moves:
             for i in range(0, len(move.from_row_col), 2):
@@ -424,7 +424,7 @@ class GameState:
                     elif self.board[move[0]][move[1]][0] == self.cell_occupation_code_black: #capturing move
                         moves.append(Move(self, [row, col], [move[0],move[1]]))
         return moves
-    
+
     def get_bishop_moves(self, row, col):
         moves=[]
         if self.next_player == self.cell_occupation_code_black: #if black player
@@ -532,10 +532,9 @@ if __name__ == "__main__":
         game_state.generate_fog_of_war_state().print_board()
 
         moves = game_state.get_possible_moves()
-        print("Select a move: ")
+        ansiprint("Select a move: ")
         for i in range(len(moves)):
-            print(str(i) + ': ' +  GameState.row_col_to_chess_position_str(moves[i].from_row_col[0], moves[i].from_row_col[1]) + ' -> ' + 
+            ansiprint(str(i) + ': ' +  GameState.row_col_to_chess_position_str(moves[i].from_row_col[0], moves[i].from_row_col[1]) + ' -> ' +
                     GameState.row_col_to_chess_position_str(moves[i].to_row_col[0], moves[i].to_row_col[1]))
         move_index = int(input())
         game_state.set_from_move(moves[move_index])
-

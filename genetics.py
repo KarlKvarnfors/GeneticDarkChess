@@ -195,15 +195,17 @@ class Population:
         for i in individuals:
             i.score = 0
         print("Starting competition")
-        for i1 in individuals:
-            for i2 in individuals:
-                if i1 is not i2:
-                    winner = play_game(i1.get_player(GameState.cell_occupation_code_white),
-                                       i2.get_player(GameState.cell_occupation_code_black))
-                    if winner is i1:
+        mating = [False]*len(self.individuals)
+        for k1, i1 in individuals:
+            for k2, i2 in individuals:
+                if k2>k1:
+                    p1 = i1.get_player(GameState.cell_occupation_code_white)
+                    p2 = i2.get_player(GameState.cell_occupation_code_black)
+                    winner = play_game(p1,p2)
+                    if winner is p1:
                         i1.score += 3
                         i2.score += 0
-                    elif winner is i2:
+                    elif winner is p2:
                         i1.score += 0
                         i2.score += 3
                     else:

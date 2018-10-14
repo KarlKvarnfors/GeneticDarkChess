@@ -3,6 +3,22 @@ import math
 import numpy
 
 
+# Captured pieces heuristic
+
+def captured_pieces_heuristic(game_state):
+    relative_values = [1, 5, 3, 3, 9, 1000, 9]
+    value = 0
+    if game_state.next_player == game_state.cell_occupation_code_white:
+        for piece in game_state.captured_black_pieces:
+            value += relative_values[piece]
+
+    if game_state.next_player == game_state.cell_occupation_code_black:
+        for piece in game_state.captured_white_pieces:
+            value += relative_values[piece]
+    normalizing_factor = 9 * 9 + 4 * 3 + 5 * 2 + 1000
+    value = 2 * value / normalizing_factor - 1
+    return value
+
 
 # Protected King Heuristic, checks for protected king
 
@@ -222,6 +238,7 @@ def def_threatened_pieces_heuristic(game_state):
 # The same heuristics are going to be used by each player,
 # it's therefore a constant
 HEURISTICS = [
+    captured_pieces_heuristic,
     protected_play_heuristic,
     information_heuristic,
     agg_threatened_pieces_heuristic,

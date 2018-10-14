@@ -28,22 +28,25 @@ def get_bit(bit, value):
     return (value & (1<<bit))>>bit
 
 class Chromosome:
-    def __init__(self, genes = None):
-        if genes is None:
-            # generate a random set of weights for the chromosome
-            weights_compressed = [[0]*pol_n]* (len(HEURISTICS)-1)
-            for W_h in weights_compressed:
-                tmp_w = [0]*pol_n
-                for i in range(pol_n):
-                    W_h[i] = max(0,1 -random.random() -tmp_w[i])
-                    tmp_w[i] = tmp_w[i] + W_h[i]
-            self.set_genes(numpy.array(weights_compressed))
-        else:
-            self.genes = genes
+    def __init__(self, genes = numpy.array([])):
+        self.genes = genes
         self.length = self.genes.size
 
+    def __repr__(self):
+        str = ':'.join(format(g, '08x') for g in self.genes)
+        return str
+
+    def __str__(self):
+        binary = ':'.join(format(g, '032b') for g in self.genes)
+        str = "Chrom hex : "+repr(self) #+" bin: "+binary
+        return str
+
+    def fromStr(str):
+        Str = str.split(':')
+        return Chromosome(numpy.array([int(s, 16) for s in Str]))
+
     #static
-    def weight_to_gene(self, w):
+    def weight_to_gene(w):
         return int(w*2**WEIGHT_PRECISION)
 
     def set_gene(self, w, index):
@@ -99,6 +102,44 @@ class Individual:
         self.score = score
         self.alive = True
 
+
+    def __repr__(self):
+        str = 'b.{}'.format(self.basis_n)
+        for c in self.chromosomes:
+            if c is self.dom:
+                str += "$dom."+repr(c)
+            else:
+                str += "$dis."+repr(c)
+        return str
+
+    def __str__(self):
+        str = 'Individual '
+        l = 0
+        for c in self.chromosomes:
+            if l == 1:
+                str += '\n           '
+            if c is self.dom:
+                str += "chrom {} : {} <-dominant".format(l, repr(c))
+            else:
+                str += "chrom {} : {}".format(l, repr(c))
+            l = 1
+        return str
+
+    def fromStr(str):
+        Str = str.split('$')
+        chroms = []
+        dom = 0
+        s = Str.pop(0)
+        basis = int( s.split('.')[1])
+        for k, s in enumerate(Str):
+            ss = s.split('.')
+            if ss[0] == 'dom':
+                chroms.append(Chromosome.fromStr(ss[1]))
+                dom = k
+            else:
+                chroms.append(Chromosome.fromStr(ss[1]))
+        return Individual(chroms, basis, dom)
+
     def get_weights(self, compressed = True):
         if(compressed):
             return self.dom.to_weights(self.basis_n)
@@ -121,11 +162,26 @@ class Individual:
     def get_player(self, player_id):
         return Player.Player(True, player_id, self.get_weights(False))
 
-class Population():
-    def __init__(self, individuals):
+class Population:
+    def __init__(self, individuals, generation = 0):
         self.individuals = individuals
+        self.generation = generation
         self.size   = len(self.individuals)
         self.length = len(self.individuals)
+
+    def __repr__(self):
+        str = 'population generation :{}\n'.format(self.generation)
+        str += '\n'.join(repr(i) for i in self.individuals)
+        return str
+
+    def fromStr(str):
+        Str = str.split('\n')
+        generation = int(Str[0].split(':')[1])
+        Str.pop(0)
+        indiv = []
+        for s in Str:
+            indiv.append(Individual.fromStr(s))
+        return Population(indiv, generation)
 
     def compete(self):
         """
@@ -216,12 +272,15 @@ if __name__ == "__main__":
     individuals = [ Individual([Chromosome(), Chromosome()], args.n) for _ in range(args.i) ]
     print("number of heuristics implemented : ", len(HEURISTICS))
     for indiv in individuals:
-        print("\nindividual ", indiv, " has these weights seared into its DNA : ")
-        for k, chromosome in enumerate(indiv.chromosomes):
-            if indiv.dom is chromosome:
-                print("chromosome ", k, ": ", chromosome.to_weights(args.n)," <- dominant")
-            else:
-                print("chromosome ", k, ": ", chromosome.to_weights(args.n))
+        # generate a random set of weights for the chromosome
+        weights_compressed = [[0]*pol_n]* (len(HEURISTICS)-1)
+        for W_h in weights_compressed:
+            tmp_w = [0]*pol_n
+            for i in range(pol_n):
+                W_h[i] = max(0,1 -random.random() -tmp_w[i])
+                tmp_w[i] = tmp_w[i] + W_h[i]
+        indiv.set_genes(numpy.array(weights_compressed))
+        print(indiv)
 
     print("\nwill play against each other : ")
     pop = Population(individuals)
@@ -239,12 +298,8 @@ if __name__ == "__main__":
             print(i," has survived with his score of ", i.score)
     print("proceeding forth with a thorough copulation to compensate for the recent genocide")
     new_individs = pop.naturalyRenew(deathToll)
+    print("newborns :")
     for indiv in new_individs:
-        print("\nNewborn ", indiv, " has these weights seared into its DNA : ")
-        for k, chromosome in enumerate(indiv.chromosomes):
-            if indiv.dom is chromosome:
-                print("chromosome ", k, ": ", chromosome.to_weights(args.n)," <- dominant")
-            else:
-                print("chromosome ", k, ": ", chromosome.to_weights(args.n))
+        print(indiv)
 
     # print(args.accumulate(args.integers))

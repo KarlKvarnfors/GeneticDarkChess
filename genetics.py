@@ -1,5 +1,6 @@
 import numpy
 import random
+from threading import Thread
 from math import tanh
 
 from GameState import GameState
@@ -183,20 +184,46 @@ class Population:
             indiv.append(Individual.fromStr(s))
         return Population(indiv, generation)
 
-    def compete(self):
+    class threadedGame(Thread):
+        def __init__(self, i1,i2):
+            Thread.__init__(self)
+            self.i1 = i1
+            self.i2 = i2
+
+        def run(self):
+            p1 = self.i1.get_player(GameState.cell_occupation_code_white)
+            p2 = self.i2.get_player(GameState.cell_occupation_code_black)
+            winner = play_game(p1,p2)
+            if winner is p1:
+                self.i1.score += 3
+                self.i2.score += 0
+            elif winner is p2:
+                self.i1.score += 0
+                self.i2.score += 3
+            else:
+                self.i1.score += 1
+                self.i2.score += 1
+
+    def compete(self, threaded = False):
         """
             Every individual competes in dark chess and gets a final score distributed as such :
                 + 3 per win
                 + 1 per draw
                 + 0 per loss
         """
+        if threaded:
+            import multiprocessing
+            import time
+            nr_threads = 3*multiprocessing.cpu_count()//2
+            running_threads = []
         # reinitialise scores
         print("Reinitialising each players scores")
         for i in self.individuals:
             i.score = 0
-        print("Starting competition")
-
-        mating = [False]*self.size
+        if threaded:
+            print("Starting competition with {} threads".format(nr_threads))
+        else:
+            print("Starting competition")
         nb_faceoffs = self.size*(self.size-1)//2
         cout = 0
         for k1, i1 in enumerate(self.individuals):
@@ -204,18 +231,32 @@ class Population:
                 if k2>k1:
                     cout += 1
                     print ( "competition underway : {}% [".format(int(100*cout/nb_faceoffs))+"#"*cout+"-"*(nb_faceoffs-cout)+"]", end='\r')
-                    p1 = i1.get_player(GameState.cell_occupation_code_white)
-                    p2 = i2.get_player(GameState.cell_occupation_code_black)
-                    winner = play_game(p1,p2)
-                    if winner is p1:
-                        i1.score += 3
-                        i2.score += 0
-                    elif winner is p2:
-                        i1.score += 0
-                        i2.score += 3
+                    if threaded:
+                        while len(running_threads) >= nr_threads:
+                            for k, th in enumerate(running_threads):
+                                if not th.is_alive():
+                                    th.join()
+                                    running_threads.pop(k)
+                            time.sleep(.1)
+                        th = self.threadedGame(i1,i2)
+                        th.start()
+                        running_threads.append(th)
                     else:
-                        i1.score += 1
-                        i2.score += 1
+                        p1 = i1.get_player(GameState.cell_occupation_code_white)
+                        p2 = i2.get_player(GameState.cell_occupation_code_black)
+                        winner = play_game(p1,p2)
+                        if winner is p1:
+                            i1.score += 3
+                            i2.score += 0
+                        elif winner is p2:
+                            i1.score += 0
+                            i2.score += 3
+                        else:
+                            i1.score += 1
+                            i2.score += 1
+        if threaded:
+            for th in running_threads:
+                th.join()
         print('')
 
     def naturalySelect(self):
@@ -261,7 +302,6 @@ class Population:
                             new_individuals.append(i1.mate_with(i2))
         self.individuals.extend(new_individuals)
         return new_individuals
-
 
 if __name__ == "__main__":
     import argparse

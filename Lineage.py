@@ -35,9 +35,9 @@ class Lineage:
         self.length = len(self.populations)
         self.size = len(self.populations)
 
-    def nextGeneration(self):
+    def nextGeneration(self, threaded = False):
         popul = Population(self.populations[-1].individuals, self.generations+1)
-        popul.compete()
+        popul.compete(threaded)
         deaths = popul.naturalySelect()
         popul.naturalyRenew(deaths)
         self.populations.append(popul)
@@ -89,7 +89,7 @@ for l in range(args.l):
 for l in lins:
     while l.generations < args.g:
         print("Creating generation ",l.generations+1)
-        l.nextGeneration()
+        l.nextGeneration(True)
         fname = "lin{}gen{}.lineage".format(l.name, l.generations)
         print("saving to file : ", "test/"+fname)
         l.toFile("test/"+fname)

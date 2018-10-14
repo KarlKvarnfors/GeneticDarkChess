@@ -1,6 +1,3 @@
-# for colorful printing
-from ansimarkup import ansiprint as print
-
 class Move:
     def __init__(self, prev_game_state, from_row_col, to_row_col):
         self.prev_game_state = prev_game_state
@@ -36,7 +33,7 @@ class GameState:
         self.moves_until_draw = 50
         self.captured_white_pieces = []
         self.captured_black_pieces = []
-    
+
     def set_from_move(self, move):
         for row in range(self.board_size):
             for col in range(self.board_size):
@@ -46,7 +43,7 @@ class GameState:
         self.moves_until_draw = move.prev_game_state.moves_until_draw - 1
         self.captured_white_pieces = [piece for piece in move.prev_game_state.captured_white_pieces]
         self.captured_black_pieces = [piece for piece in move.prev_game_state.captured_black_pieces]
-        
+
         for i in range(0, len(move.from_row_col), 2):
             if move.to_row_col[i] < 0 or move.to_row_col[i+1] < 0:
                 self.board[move.from_row_col[i]][move.from_row_col[i+1]][0] = self.cell_occupation_code_empty
@@ -54,14 +51,14 @@ class GameState:
 
             if (move.prev_game_state.board[move.from_row_col[i]][move.from_row_col[i+1]][1] == self.cell_piece_type_pawn or
                 move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][0] != self.cell_occupation_code_empty):
-                self.moves_until_draw = 50         
+                self.moves_until_draw = 50
 
             if move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][0] != self.cell_occupation_code_empty:
                 if move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][0] == self.cell_occupation_code_white:
                     self.captured_white_pieces.append(move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][1])
                 elif move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][0] == self.cell_occupation_code_black:
                     self.captured_black_pieces.append(move.prev_game_state.board[move.to_row_col[i]][move.to_row_col[i+1]][1])
-            
+
             self.board[move.to_row_col[i]][move.to_row_col[i+1]][0] = move.prev_game_state.board[move.from_row_col[i]][move.from_row_col[i+1]][0]
             self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] = move.prev_game_state.board[move.from_row_col[i]][move.from_row_col[i+1]][1]
 
@@ -77,7 +74,7 @@ class GameState:
                 self.next_player == self.cell_occupation_code_white and
                 self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] == self.cell_piece_type_pawn):
                 self.board[move.to_row_col[i]][move.to_row_col[i+1]][1] = self.cell_piece_type_promoted_pawn
-        
+
         if move.prev_game_state.next_player == self.cell_occupation_code_black:
             self.next_player = self.cell_occupation_code_white
         elif move.prev_game_state.next_player == self.cell_occupation_code_white:
@@ -142,7 +139,7 @@ class GameState:
         if occupation_code == GameState.cell_occupation_code_empty:
             return '.'
         elif occupation_code == GameState.cell_occupation_code_fog:
-            return '<fg #888888>X</fg #888888>'
+            return '\33[90mX\033[0m'
 
         piece_string = ''
         if piece_type == GameState.cell_piece_type_pawn:
@@ -163,7 +160,7 @@ class GameState:
         if occupation_code == GameState.cell_occupation_code_white:
             return piece_string
         elif occupation_code == GameState.cell_occupation_code_black:
-            return '<red>' + piece_string + '</red>'
+            return '\033[31m' + piece_string + '\033[0m'
 
     def chess_position_str_to_row_col(position_str):
         if len(position_str) != 2:
@@ -256,7 +253,7 @@ class GameState:
         if self.next_player == self.cell_occupation_code_white:
             print('white')
         else:
-            print('<red>black</red>')
+            print('\033[31mblack\033[0m')
         print('Moves until draw: ' + str(self.moves_until_draw))
         print('Captured white pieces: [', end='')
         for captured_white_piece in self.captured_white_pieces:
@@ -269,13 +266,13 @@ class GameState:
         print("]")
 
     def generate_fog_of_war_state(self):
-        
+
         visible_cells = set()
         for row in range(self.board_size):
             for col in range(self.board_size):
                 if self.board[row][col][0] == self.next_player:
                     visible_cells.add((row, col))
-        
+
         moves = self.get_possible_moves()
         for move in moves:
             for i in range(0, len(move.from_row_col), 2):
@@ -465,7 +462,7 @@ class GameState:
                     elif self.board[move[0]][move[1]][0] == self.cell_occupation_code_black: #capturing move
                         moves.append(Move(self, [row, col], [move[0],move[1]]))
         return moves
-    
+
     def get_bishop_moves(self, row, col):
         moves=[]
         if self.next_player == self.cell_occupation_code_black: #if black player
@@ -575,8 +572,7 @@ if __name__ == "__main__":
         moves = game_state.get_possible_moves()
         print("Select a move: ")
         for i in range(len(moves)):
-            print(str(i) + ': ' +  GameState.row_col_to_chess_position_str(moves[i].from_row_col[0], moves[i].from_row_col[1]) + ' -> ' + 
+            print(str(i) + ': ' +  GameState.row_col_to_chess_position_str(moves[i].from_row_col[0], moves[i].from_row_col[1]) + ' -> ' +
                     GameState.row_col_to_chess_position_str(moves[i].to_row_col[0], moves[i].to_row_col[1]))
         move_index = int(input())
         game_state.set_from_move(moves[move_index])
-

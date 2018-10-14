@@ -1,34 +1,12 @@
-from GameState import GameState
+from GameState import Move, GameState
 import math
 import numpy
 
 
-# TODO : insert definition of heuristics here
-
-# The same heuristics are going to be used by each player,
-# it's therefore a constant
-HEURISTICS = [
-    protected_king_heuristic,
-    protected_play_heuristic,
-    information_heuristic,
-    agg_threatened_values_heuristic,
-    def_threatened_values_heuristic
-]
-
-
-
-
-def player_heuristic(game_state, player):
-    number_of_pieces = 0
-    for row in range(game_state.board_size):
-        for col in range(game_state.board_size):
-            if game_state.board[row][col][0] == player:
-                number_of_pieces += 1
-    return float(number_of_pieces)/32 #normalise the output
 
 # Protected King Heuristic, checks for protected king
 
-def protected_king_heuristic(game_state, weights, player):
+def protected_king_heuristic(game_state):
     # For rows and diagonals
         # If closest piece is own piece or border, continue
         # If closest piece is enemy piece or unknown, break
@@ -36,11 +14,12 @@ def protected_king_heuristic(game_state, weights, player):
     # Return 1
     king_row = None
     king_col = None
+    player = game_state.next_player
     
     for row in range(game_state.board_size):
-            for col in range(game_state.board_size):
-                if game_state.board[row][col][0] == player and game_state.board[row][col][1] == game_state.cell_piece_type_king:
-                    king_row, king_col = row, col
+        for col in range(game_state.board_size):
+            if (game_state.board[row][col][0] == player and game_state.board[row][col][1] == game_state.cell_piece_type_king):
+                king_row, king_col = row, col
                     
     for row in range(king_row + 1, game_state.board_size):
         current_cell_occupation_code = game_state.board[row][king_col][0]
@@ -151,7 +130,7 @@ def protected_king_heuristic(game_state, weights, player):
     
 # Protected Play Heuristic, checks for protected pieces
 
-def protected_play_heuristic(game_state, weights, player):
+def protected_play_heuristic(game_state):
     relative_values = [1, 5, 3, 3, 9, 0, 9]
     value = 0
     moves = get_possible_moves_func(game_state)
@@ -162,7 +141,8 @@ def protected_play_heuristic(game_state, weights, player):
             piece = game_state.board[move.from_row_col[0]][move.from_row_col[1]][1]
             value += relative_values[piece]
             normalizing_factor += max(relative_values)
-    value = 2 * value / normalizing_factor - 1
+    if normalizing_factor != 0:
+        value = 2 * value / normalizing_factor - 1
     return value
     # For pieces
         # If protected, += relative value of piece
@@ -171,7 +151,7 @@ def protected_play_heuristic(game_state, weights, player):
 
 # Information Heuristic, checks for number of visible pieces
 
-def information_heuristic(game_state, weights, player):
+def information_heuristic(game_state):
     # For squares
         # If visible
             # Visible squares += 1
@@ -182,14 +162,13 @@ def information_heuristic(game_state, weights, player):
             for col in range(game_state.board_size):
                 if game_state.board[row][col][0] != game_state.cell_occupation_code_fog:
                     visible_cells += 1
-    print(visible_cells)
     value = visible_cells / 32 - 1
     return value
 
 
 # Threatened Pieces Heuristic (Aggressive), checks for number of threatened enemy pieces
 
-def agg_threatened_pieces_heuristic(game_state, weights, player):
+def agg_threatened_pieces_heuristic(game_state):
     relative_values = [1, 5, 3, 3, 9, 20, 9]
     value = 0
     moves = get_possible_moves_func(game_state)
@@ -200,7 +179,8 @@ def agg_threatened_pieces_heuristic(game_state, weights, player):
             piece = game_state.board[move.from_row_col[0]][move.from_row_col[1]][1]
             value += relative_values[piece]
             normalizing_factor += max(relative_values)
-    value = 2 * value / normalizing_factor - 1
+    if normalizing_factor != 0:
+        value = 2 * value / normalizing_factor - 1
     return value
     # For own pieces
         # Get next moves
@@ -213,7 +193,7 @@ def agg_threatened_pieces_heuristic(game_state, weights, player):
 
 # Threatened Pieces Heuristic (Defensive), checks for  number of threatened own pieces
 
-def def_threatened_pieces_heuristic(game_state, weights, player):
+def def_threatened_pieces_heuristic(game_state):
     relative_values = [1, 5, 3, 3, 9, 1000, 9]
     value = 0
     moves = get_possible_moves_func(game_state)
@@ -223,9 +203,10 @@ def def_threatened_pieces_heuristic(game_state, weights, player):
             game_state.board[move.to_row_col[0]][move.to_row_col[1]][0] == game_state.next_player):
             
             piece = game_state.board[move.from_row_col[0]][move.from_row_col[1]][1]
-            value += relative_values[piece]
+            value -= relative_values[piece]
             normalizing_factor += max(relative_values)
-    value = 2 * value / normalizing_factor - 1
+    if normalizing_factor != 0:
+        value = 2 * value / normalizing_factor - 1
     return value
     # For visible enemy pieces
         # Get next moves
@@ -236,6 +217,19 @@ def def_threatened_pieces_heuristic(game_state, weights, player):
     # Normalize, return
 
     
+# TODO : insert definition of heuristics here
+
+# The same heuristics are going to be used by each player,
+# it's therefore a constant
+HEURISTICS = [
+    protected_play_heuristic,
+    information_heuristic,
+    agg_threatened_pieces_heuristic,
+    def_threatened_pieces_heuristic
+]
+
+
+
 
 
 def other_player(player):
@@ -538,6 +532,7 @@ def bernsteinweight_per_heuristic(nr_of_pieces, basis, degree):
     d=degree
     bernsteinweight = bernstein(b, d)
     return bernsteinweight(t)
+
 
 # temporary function
 def heuristic_weights_shape():

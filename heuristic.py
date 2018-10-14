@@ -8,13 +8,14 @@ import numpy
 def captured_pieces_heuristic(game_state):
     relative_values = [1, 5, 3, 3, 9, 1000, 9]
     value = 0
-    if game_state.next_player == game_state.cell_occupation_code_white:
+    if other_player(game_state.next_player) == game_state.cell_occupation_code_white:
         for piece in game_state.captured_black_pieces:
             value += relative_values[piece]
 
-    if game_state.next_player == game_state.cell_occupation_code_black:
+    if other_player(game_state.next_player) == GameState.cell_occupation_code_black:
         for piece in game_state.captured_white_pieces:
             value += relative_values[piece]
+
     normalizing_factor = 9 * 9 + 4 * 3 + 5 * 2 + 1000
     value = 2 * value / normalizing_factor - 1
     return value
@@ -152,8 +153,8 @@ def protected_play_heuristic(game_state):
     moves = get_possible_moves_func(game_state)
     normalizing_factor = 0
     for move in moves:
-        if (game_state.board[move.from_row_col[0]][move.from_row_col[1]][0] == game_state.next_player and
-            game_state.board[move.to_row_col[0]][move.to_row_col[1]][0] == game_state.next_player):
+        if (game_state.board[move.from_row_col[0]][move.from_row_col[1]][0] == other_player(game_state.next_player) and
+            game_state.board[move.to_row_col[0]][move.to_row_col[1]][0] == other_player(game_state.next_player)):
             piece = game_state.board[move.from_row_col[0]][move.from_row_col[1]][1]
             value += relative_values[piece]
             normalizing_factor += max(relative_values)
@@ -190,8 +191,8 @@ def agg_threatened_pieces_heuristic(game_state):
     moves = get_possible_moves_func(game_state)
     normalizing_factor = 0
     for move in moves:
-        if (game_state.board[move.from_row_col[0]][move.from_row_col[1]][0] == game_state.next_player and
-            game_state.board[move.to_row_col[0]][move.to_row_col[1]][0] == other_player(game_state.next_player)):
+        if (game_state.board[move.from_row_col[0]][move.from_row_col[1]][0] == other_player(game_state.next_player) and
+            game_state.board[move.to_row_col[0]][move.to_row_col[1]][0] == game_state.next_player):
             piece = game_state.board[move.from_row_col[0]][move.from_row_col[1]][1]
             value += relative_values[piece]
             normalizing_factor += max(relative_values)
@@ -215,8 +216,8 @@ def def_threatened_pieces_heuristic(game_state):
     moves = get_possible_moves_func(game_state)
     normalizing_factor = 0
     for move in moves:
-        if (game_state.board[move.from_row_col[0]][move.from_row_col[1]][0] == other_player(game_state.next_player) and
-            game_state.board[move.to_row_col[0]][move.to_row_col[1]][0] == game_state.next_player):
+        if (game_state.board[move.from_row_col[0]][move.from_row_col[1]][0] == game_state.next_player and
+            game_state.board[move.to_row_col[0]][move.to_row_col[1]][0] == other_player(game_state.next_player)):
             
             piece = game_state.board[move.from_row_col[0]][move.from_row_col[1]][1]
             value -= relative_values[piece]

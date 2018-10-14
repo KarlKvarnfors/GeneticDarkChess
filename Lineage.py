@@ -17,7 +17,7 @@ class Lineage:
         pops = [Population.fromStr(s) for s in Str]
         return Lineage(pops, name)
 
-    def toFile(self, filename = "a.lineage"):
+    def toFile(self, filename = "a.lin"):
         f = open(filename, 'w')
         f.write(repr(self))
         return f.close()

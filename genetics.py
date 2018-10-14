@@ -195,9 +195,14 @@ class Population:
         for i in individuals:
             i.score = 0
         print("Starting competition")
-        mating = [False]*len(self.individuals)
-        for k1, i1 in individuals:
-            for k2, i2 in individuals:
+
+        mating = [False]*self.size
+        nb_faceoffs = self.size*(self.size-1)//2
+        cout = 0
+        for k1, i1 in enumerate(individuals):
+            for k2, i2 in enumerate(individuals):
+                cout += 1
+                print ( "competition underway : {}% [".format(int(100*cout/nb_faceoffs))+"#"*cout+"-"*(nb_faceoffs-cout)+"]", end='\r')
                 if k2>k1:
                     p1 = i1.get_player(GameState.cell_occupation_code_white)
                     p2 = i2.get_player(GameState.cell_occupation_code_black)
@@ -274,14 +279,15 @@ if __name__ == "__main__":
     individuals = [ Individual([Chromosome(), Chromosome()], args.n) for _ in range(args.i) ]
     print("number of heuristics implemented : ", len(HEURISTICS))
     for indiv in individuals:
-        # generate a random set of weights for the chromosome
-        weights_compressed = [[0]*pol_n]* (len(HEURISTICS)-1)
-        for W_h in weights_compressed:
-            tmp_w = [0]*pol_n
-            for i in range(pol_n):
-                W_h[i] = max(0,1 -random.random() -tmp_w[i])
-                tmp_w[i] = tmp_w[i] + W_h[i]
-        indiv.set_genes(numpy.array(weights_compressed))
+        for c in indiv.chromosomes:
+            # generate a random set of weights for the chromosome
+            weights_compressed = [[0]*pol_n]* (len(HEURISTICS)-1)
+            for W_h in weights_compressed:
+                tmp_w = [0]*pol_n
+                for i in range(pol_n):
+                    W_h[i] = max(0,1 -random.random() -tmp_w[i])
+                    tmp_w[i] = tmp_w[i] + W_h[i]
+            c.set_genes(numpy.array(weights_compressed))
         print(indiv)
 
     print("\nwill play against each other : ")
@@ -294,13 +300,13 @@ if __name__ == "__main__":
     deathToll = pop.naturalySelect()
     if deathToll == 0:
         print("\nNo AIs died! Do they all have the same score??\n")
-    print("These are the following survivors after the loss of ", deathToll, " innocent AIs :")
+    print("These are the scores of the surviving AIs after the loss of ", deathToll, " innocent AIs :")
     for i in pop.individuals:
         if i.alive:
-            print(i," has survived with his score of ", i.score)
+            print(" score : ", i.score)
     print("proceeding forth with a thorough copulation to compensate for the recent genocide")
     new_individs = pop.naturalyRenew(deathToll)
-    print("newborns :")
+    print("Newborns :")
     for indiv in new_individs:
         print(indiv)
 

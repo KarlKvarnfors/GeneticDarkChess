@@ -67,33 +67,33 @@ if __name__ == "__main__":
     parser.add_argument('-l', type=int, default=1,
                         help='number of different lineages (default: 1)')
 
-args = parser.parse_args()
-pol_n = args.n+1 #number of polynomes
+    args = parser.parse_args()
+    pol_n = args.n+1 #number of polynomes
 
-lins = []
+    lins = []
 
-# l is an int here
-for l in range(args.l):
-    individuals = [ Individual([Chromosome(), Chromosome()], args.n) for _ in range(args.i) ]
-    for indiv in individuals:
-        for c in indiv.chromosomes:
-            # generate a random set of weights for the chromosome
-            weights_compressed = [[0]*pol_n]* (len(HEURISTICS)-1)
-            for W_h in weights_compressed:
-                tmp_w = [0]*pol_n
-                for i in range(pol_n):
-                    W_h[i] = max(0,1 -random.random() -tmp_w[i])
-                    tmp_w[i] = tmp_w[i] + W_h[i]
-            c.set_genes(numpy.array(weights_compressed))
-    pop = Population(individuals, 1)
-    print("First generation created for lineage number ", l)
-    lins.append(Lineage([pop], str(l)))
+    # l is an int here
+    for l in range(args.l):
+        individuals = [ Individual([Chromosome(), Chromosome()], args.n) for _ in range(args.i) ]
+        for indiv in individuals:
+            for c in indiv.chromosomes:
+                # generate a random set of weights for the chromosome
+                weights_compressed = [[0]*pol_n]* (len(HEURISTICS)-1)
+                for W_h in weights_compressed:
+                    tmp_w = [0]*pol_n
+                    for i in range(pol_n):
+                        W_h[i] = max(0,1 -random.random() -tmp_w[i])
+                        tmp_w[i] = tmp_w[i] + W_h[i]
+                c.set_genes(numpy.array(weights_compressed))
+        pop = Population(individuals, 1)
+        print("First generation created for lineage number ", l)
+        lins.append(Lineage([pop], str(l)))
 
-# l is a lineage here
-for l in lins:
-    while l.generations < args.g:
-        print("Creating generation ",l.generations+1)
-        l.nextGeneration(False)
-        fname = "lin{}gen{}.lineage".format(l.name, l.generations)
-        print("saving to file : ", "test/"+fname)
-        l.toFile("test/"+fname)
+    # l is a lineage here
+    for l in lins:
+        while l.generations < args.g:
+            print("Creating generation ",l.generations+1)
+            l.nextGeneration(True)
+            fname = "lin{}gen{}.lineage".format(l.name, l.generations)
+            print("saving to file : ", "test/"+fname)
+            l.toFile("test/"+fname)

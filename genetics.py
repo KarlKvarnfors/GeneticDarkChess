@@ -317,6 +317,7 @@ class Population:
                             mating[k2] = True
                             birthCount += 1
                             new_individuals.append(i1.mate_with(i2))
+            mating = [False]*len(self.individuals)
         self.individuals.extend(new_individuals)
         return new_individuals
 

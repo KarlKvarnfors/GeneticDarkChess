@@ -204,44 +204,63 @@ class Population:
                 self.i1.score += 1
                 self.i2.score += 1
 
-    def compete(self, threaded = False):
+
+    def compete(self, threaded = False, n_threads = -1):
         """
             Every individual competes in dark chess and gets a final score distributed as such :
                 + 3 per win
                 + 1 per draw
                 + 0 per loss
         """
-        if threaded:
-            import multiprocessing
-            import time
-            nr_threads = 3*multiprocessing.cpu_count()//2
-            running_threads = []
-        # reinitialise scores
         print("Reinitialising each players scores")
         for i in self.individuals:
             i.score = 0
-        if threaded:
-            print("Starting competition with {} threads".format(nr_threads))
-        else:
-            print("Starting competition")
         nb_faceoffs = self.size*(self.size-1)//2
         cout = 0
-        for k1, i1 in enumerate(self.individuals):
-            for k2, i2 in enumerate(self.individuals):
-                if k2>k1:
-                    cout += 1
-                    print ( "competition underway : {}% [".format(int(100*cout/nb_faceoffs))+"#"*cout+"-"*(nb_faceoffs-cout)+"]", end='\r')
-                    if threaded:
-                        while len(running_threads) >= nr_threads:
-                            for k, th in enumerate(running_threads):
-                                if not th.is_alive():
-                                    th.join()
-                                    running_threads.pop(k)
-                            time.sleep(.1)
-                        th = self.threadedGame(i1,i2)
-                        th.start()
-                        running_threads.append(th)
-                    else:
+        if threaded:
+            from pathos.multiprocessing import ProcessingPool as Pool
+            from multiprocessing import cpu_count
+            if n_threads < 0:
+                nr_threads = cpu_count()//2 # that is usually the number of physical cores
+            else:
+                nr_threads = n_threads
+            print("Starting competition with {} threads".format(nr_threads))
+
+            def syncGame(pair):
+                p1, p2 = pair
+                winner = play_game(p1,p2)
+                if winner is p1:
+                    return [3,0]
+                elif winner is p2:
+                    return [0,3]
+                else:
+                    return [1,1]
+
+            player_pairs = []
+            # scoreLock = multiprocessing.RLock()
+            p = Pool(nr_threads)
+            for k1, i1 in enumerate(self.individuals):
+                for k2, i2 in enumerate(self.individuals):
+                    if k1<k2:
+                        player_pairs.append([
+                            i1.get_player(GameState.cell_occupation_code_white),
+                            i2.get_player(GameState.cell_occupation_code_black)
+                        ])
+            res = p.map(syncGame, player_pairs)
+            len_i = len(self.individuals)
+            cout = 0
+            for i in range(len_i):
+                for j in range(i+1, len_i):
+                    self.individuals[i].score+=res[cout][0]
+                    self.individuals[j].score+=res[cout][1]
+                    cout+=1
+        else:
+            print("Starting competition")
+            for k1, i1 in enumerate(self.individuals):
+                for k2, i2 in enumerate(self.individuals):
+                    if k2>k1:
+                        cout += 1
+                        print ( "competition underway : {}% [".format(int(100*cout/nb_faceoffs))+"#"*cout+"-"*(nb_faceoffs-cout)+"]", end='\r')
                         p1 = i1.get_player(GameState.cell_occupation_code_white)
                         p2 = i2.get_player(GameState.cell_occupation_code_black)
                         winner = play_game(p1,p2)
@@ -254,10 +273,8 @@ class Population:
                         else:
                             i1.score += 1
                             i2.score += 1
-        if threaded:
-            for th in running_threads:
-                th.join()
-        print('')
+            print('') # gets rid of the carriage return char
+
 
     def naturalySelect(self):
         self.individuals.sort(key= lambda i : i.score)
@@ -302,6 +319,11 @@ class Population:
                             new_individuals.append(i1.mate_with(i2))
         self.individuals.extend(new_individuals)
         return new_individuals
+
+
+# This is ugly, but synchronous computation won't work otherwise
+
+
 
 if __name__ == "__main__":
     import argparse

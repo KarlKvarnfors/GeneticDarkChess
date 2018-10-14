@@ -37,7 +37,10 @@ class Lineage:
 
     def nextGeneration(self, threaded = False):
         popul = Population(self.populations[-1].individuals, self.generations+1)
+        t1 = time.time()
         popul.compete(threaded)
+        delta = time.time() - t1
+        print("delta: {}".format(delta))
         deaths = popul.naturalySelect()
         popul.naturalyRenew(deaths)
         self.populations.append(popul)
@@ -52,6 +55,7 @@ if __name__ == "__main__":
     from heuristic import HEURISTICS
     import random
     import numpy
+    import time
 
     parser = argparse.ArgumentParser(description='Make two Individuals play against each other.')
     parser.add_argument('-n', type=int, default=0,

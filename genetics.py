@@ -192,18 +192,18 @@ class Population:
         """
         # reinitialise scores
         print("Reinitialising each players scores")
-        for i in individuals:
+        for i in self.individuals:
             i.score = 0
         print("Starting competition")
 
         mating = [False]*self.size
         nb_faceoffs = self.size*(self.size-1)//2
         cout = 0
-        for k1, i1 in enumerate(individuals):
-            for k2, i2 in enumerate(individuals):
-                cout += 1
-                print ( "competition underway : {}% [".format(int(100*cout/nb_faceoffs))+"#"*cout+"-"*(nb_faceoffs-cout)+"]", end='\r')
+        for k1, i1 in enumerate(self.individuals):
+            for k2, i2 in enumerate(self.individuals):
                 if k2>k1:
+                    cout += 1
+                    print ( "competition underway : {}% [".format(int(100*cout/nb_faceoffs))+"#"*cout+"-"*(nb_faceoffs-cout)+"]", end='\r')
                     p1 = i1.get_player(GameState.cell_occupation_code_white)
                     p2 = i2.get_player(GameState.cell_occupation_code_black)
                     winner = play_game(p1,p2)
@@ -216,6 +216,7 @@ class Population:
                     else:
                         i1.score += 1
                         i2.score += 1
+        print('')
 
     def naturalySelect(self):
         self.individuals.sort(key= lambda i : i.score)

@@ -1,4 +1,6 @@
 from genetics import Population
+import matplotlib.pyplot as plt
+
 
 class Lineage:
     def __init__(self, populations = [], name = ''):
@@ -38,7 +40,7 @@ class Lineage:
     def nextGeneration(self, threaded = False):
         popul = Population(self.populations[-1].individuals, self.generations+1)
         t1 = time.time()
-        popul.compete(threaded)
+        popul.compete(True, threaded)
         delta = time.time() - t1
         print("delta: {}".format(delta))
         deaths = popul.naturalySelect()
@@ -46,6 +48,24 @@ class Lineage:
         self.populations.append(popul)
         self.updtLen()
         return popul
+
+    def plot(populations):
+        # best if all generations have competed against each other
+        gens = []
+        for pop in populations:
+            pop.individuals.sort(key= lambda i : i.score)
+            gens     .append(pop.generation)
+        scores = [[ i.score for i in pop.individuals] for pop in populations]
+        length = len(scores[0])
+        for k, gen_scores in enumerate(scores):
+            plt.plot(gen_scores, label='Generation {}'.format(gens[k]))
+        plt.show()
+
+    def beatYourElders(self, ancestry = 1, plot = True, point_reset = True, threaded = False, n_threads = -1):
+        pops = [pop for pop in self.populations if self.generations-pop.generation < ancestry]
+        Population.everybodyCompetes(pops, point_reset, threaded, n_threads)
+        if plot:
+            plot(pops)
 
 
 if __name__ == "__main__":
@@ -67,33 +87,33 @@ if __name__ == "__main__":
     parser.add_argument('-l', type=int, default=1,
                         help='number of different lineages (default: 1)')
 
-args = parser.parse_args()
-pol_n = args.n+1 #number of polynomes
+    args = parser.parse_args()
+    pol_n = args.n+1 #number of polynomes
 
-lins = []
+    lins = []
 
-# l is an int here
-for l in range(args.l):
-    individuals = [ Individual([Chromosome(), Chromosome()], args.n) for _ in range(args.i) ]
-    for indiv in individuals:
-        for c in indiv.chromosomes:
-            # generate a random set of weights for the chromosome
-            weights_compressed = [[0]*pol_n]* (len(HEURISTICS)-1)
-            for W_h in weights_compressed:
-                tmp_w = [0]*pol_n
-                for i in range(pol_n):
-                    W_h[i] = max(0,1 -random.random() -tmp_w[i])
-                    tmp_w[i] = tmp_w[i] + W_h[i]
-            c.set_genes(numpy.array(weights_compressed))
-    pop = Population(individuals, 1)
-    print("First generation created for lineage number ", l)
-    lins.append(Lineage([pop], str(l)))
+    # l is an int here
+    for l in range(args.l):
+        individuals = [ Individual([Chromosome(), Chromosome()], args.n) for _ in range(args.i) ]
+        for indiv in individuals:
+            for c in indiv.chromosomes:
+                # generate a random set of weights for the chromosome
+                weights_compressed = [[0]*pol_n]* (len(HEURISTICS)-1)
+                for W_h in weights_compressed:
+                    tmp_w = [0]*pol_n
+                    for i in range(pol_n):
+                        W_h[i] = max(0,1 -random.random() -tmp_w[i])
+                        tmp_w[i] = tmp_w[i] + W_h[i]
+                c.set_genes(numpy.array(weights_compressed))
+        pop = Population(individuals, 1)
+        print("First generation created for lineage number ", l)
+        lins.append(Lineage([pop], str(l)))
 
-# l is a lineage here
-for l in lins:
-    while l.generations < args.g:
-        print("Creating generation ",l.generations+1)
-        l.nextGeneration(True)
-        fname = "lin{}gen{}.lineage".format(l.name, l.generations)
-        print("saving to file : ", "test/"+fname)
-        l.toFile("test/"+fname)
+    # l is a lineage here
+    for l in lins:
+        while l.generations < args.g:
+            print("Creating generation ",l.generations+1)
+            l.nextGeneration(True)
+            fname = "lin{}gen{}.lineage".format(l.name, l.generations)
+            print("saving to file : ", "test/"+fname)
+            l.toFile("test/"+fname)

@@ -92,7 +92,7 @@ class Chromosome:
 
 class Individual:
     """ An individual in the evolving population """
-    def __init__(self, chromosomes, bernstein_basis_order = 0, dominant_chromosome = random.randint(0,1), score = 0):
+    def __init__(self, chromosomes, bernstein_basis_order = 0, dominant_chromosome = random.randint(0,1), score = -1):
         """
         :param chromosomes: the parent's set of chromosomes
         :param dominant_chromosome: the index of the chromosome that will express itself
@@ -105,7 +105,11 @@ class Individual:
 
 
     def __repr__(self):
-        str = 'b.{}'.format(self.basis_n)
+        str = 'b.{}$s.{}$a.'.format(self.basis_n, self.score)
+        if self.alive:
+            str += '1'
+        else:
+            str += '0'
         for c in self.chromosomes:
             if c is self.dom:
                 str += "$dom."+repr(c)
@@ -132,6 +136,10 @@ class Individual:
         dom = 0
         s = Str.pop(0)
         basis = int( s.split('.')[1])
+        s = Str.pop(0)
+        score = int( s.split('.')[1])
+        s = Str.pop(0)
+        alive =  s.split('.')[1] == '1'
         for k, s in enumerate(Str):
             ss = s.split('.')
             if ss[0] == 'dom':
@@ -139,7 +147,9 @@ class Individual:
                 dom = k
             else:
                 chroms.append(Chromosome.fromStr(ss[1]))
-        return Individual(chroms, basis, dom)
+        ret =  Individual(chroms, basis, dom, score)
+        ret.alive = alive
+        return ret
 
     def get_weights(self, compressed = True):
         if(compressed):
@@ -175,6 +185,12 @@ class Population:
         str += '\n'.join(repr(i) for i in self.individuals)
         return str
 
+    def __radd__(self, other):
+        return Population(self.individuals+other.individuals)
+
+    def __add__(self, other):
+        return Population(self.individuals+other.individuals)
+
     def fromStr(str):
         Str = str.split('\n')
         generation = int(Str[0].split(':')[1])
@@ -184,37 +200,17 @@ class Population:
             indiv.append(Individual.fromStr(s))
         return Population(indiv, generation)
 
-    class threadedGame(Thread):
-        def __init__(self, i1,i2):
-            Thread.__init__(self)
-            self.i1 = i1
-            self.i2 = i2
-
-        def run(self):
-            p1 = self.i1.get_player(GameState.cell_occupation_code_white)
-            p2 = self.i2.get_player(GameState.cell_occupation_code_black)
-            winner = play_game(p1,p2)
-            if winner is p1:
-                self.i1.score += 3
-                self.i2.score += 0
-            elif winner is p2:
-                self.i1.score += 0
-                self.i2.score += 3
-            else:
-                self.i1.score += 1
-                self.i2.score += 1
-
-
-    def compete(self, threaded = False, n_threads = -1):
+    def compete(self, point_reset = False , threaded = False, n_threads = -1):
         """
             Every individual competes in dark chess and gets a final score distributed as such :
                 + 3 per win
                 + 1 per draw
                 + 0 per loss
         """
-        print("Reinitialising each players scores")
-        for i in self.individuals:
-            i.score = 0
+        if point_reset:
+            print("Reinitialising each players scores")
+            for i in self.individuals:
+                i.score = 0
         nb_faceoffs = self.size*(self.size-1)//2
         cout = 0
         if threaded:
@@ -275,6 +271,20 @@ class Population:
                             i2.score += 1
             print('') # gets rid of the carriage return char
 
+    def everybodyCompetes(populations, point_reset = True, threaded = False, n_threads = -1):
+        if point_reset:
+            for pop in populations:
+                print("Reinitialising each players scores")
+                for i in pop.individuals:
+                    i.score = 0
+        for k1, pop1 in enumerate(populations):
+            for k2, pop2 in enumerate(populations):
+                if k1 > k2 :
+                    pop = pop1 + pop2
+                    pop.compete(False, threaded, n_threads)
+                    l1, l2 = len(pop1), len(pop2)
+                    pop1 = [i for i in pop[ 0 : l1   ]]
+                    pop2 = [i for i in pop[l1 : l1+l2]]
 
     def naturalySelect(self):
         self.individuals.sort(key= lambda i : i.score)
@@ -309,7 +319,7 @@ class Population:
                 for k2, i2 in enumerate(self.individuals):
                     if birthCount >= deathToll:
                         break
-                    elif (i1 is not i2) and (not mating[k1]) and (not mating[k2]):
+                    elif (k1 > k2) and (not mating[k1]) and (not mating[k2]):
                         q = i1.score*i2.score/max_score**2
                         p = random.uniform(0,1)**2
                         if p < q :

@@ -36,11 +36,10 @@ class Lineage:
         self.size = len(self.populations)
 
     def nextGeneration(self):
-        popul = self.populations[-1]
+        popul = Population(self.populations[-1].individuals, self.generations+1)
         popul.compete()
         deaths = popul.naturalySelect()
         popul.naturalyRenew(deaths)
-        popul.generation += 1
         self.populations.append(popul)
         self.updtLen()
         return popul
@@ -83,8 +82,8 @@ for l in range(args.l):
                     tmp_w[i] = tmp_w[i] + W_h[i]
             c.set_genes(numpy.array(weights_compressed))
     pop = Population(individuals, 1)
-    print("First population created for lineage number ", l)
-    l.append(Lineage([pop], str(l)))
+    print("First generation created for lineage number ", l)
+    lins.append(Lineage([pop], str(l)))
 
 # l is a lineage here
 for l in lins:

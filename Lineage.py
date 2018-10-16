@@ -1,4 +1,6 @@
 from genetics import Population
+import matplotlib.pyplot as plt
+
 
 class Lineage:
     def __init__(self, populations = [], name = ''):
@@ -38,7 +40,7 @@ class Lineage:
     def nextGeneration(self, threaded = False):
         popul = Population(self.populations[-1].individuals, self.generations+1)
         t1 = time.time()
-        popul.compete(threaded)
+        popul.compete(True, threaded)
         delta = time.time() - t1
         print("delta: {}".format(delta))
         deaths = popul.naturalySelect()
@@ -46,6 +48,24 @@ class Lineage:
         self.populations.append(popul)
         self.updtLen()
         return popul
+
+    def plot(populations):
+        # best if all generations have competed against each other
+        gens = []
+        for pop in populations:
+            pop.individuals.sort(key= lambda i : i.score)
+            gens     .append(pop.generation)
+        scores = [[ i.score for i in pop.individuals] for pop in populations]
+        length = len(scores[0])
+        for k, gen_scores in enumerate(scores):
+            plt.plot(gen_scores, label='Generation {}'.format(gens[k]))
+        plt.show()
+
+    def beatYourElders(self, ancestry = 1, plot = True, point_reset = True, threaded = False, n_threads = -1):
+        pops = [pop for pop in self.populations if self.generations-pop.generation < ancestry]
+        Population.everybodyCompetes(pops, point_reset, threaded, n_threads)
+        if plot:
+            plot(pops)
 
 
 if __name__ == "__main__":

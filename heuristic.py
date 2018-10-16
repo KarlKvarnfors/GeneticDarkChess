@@ -32,15 +32,15 @@ def protected_king_heuristic(game_state):
     king_row = None
     king_col = None
     player = game_state.next_player
-    
+
     for row in range(game_state.board_size):
         for col in range(game_state.board_size):
             if (game_state.board[row][col][0] == player and game_state.board[row][col][1] == game_state.cell_piece_type_king):
                 king_row, king_col = row, col
-                    
+
     for row in range(king_row + 1, game_state.board_size):
         current_cell_occupation_code = game_state.board[row][king_col][0]
-        
+
         if current_cell_occupation_code == player:
             break
         elif current_cell_occupation_code == game_state.cell_occupation_code_empty:
@@ -49,10 +49,10 @@ def protected_king_heuristic(game_state):
             return -1
         else:
             return -1
-    
+
     for row in range(king_row - 1, -1, -1):
         current_cell_occupation_code = game_state.board[row][king_col][0]
-        
+
         if current_cell_occupation_code == player:
             break
         elif current_cell_occupation_code == game_state.cell_occupation_code_empty:
@@ -61,10 +61,10 @@ def protected_king_heuristic(game_state):
             return -1
         else:
             return -1
-        
+
     for col in range(king_col + 1, game_state.board_size):
         current_cell_occupation_code = game_state.board[king_row][col][0]
-        
+
         if current_cell_occupation_code == player:
             break
         elif current_cell_occupation_code == game_state.cell_occupation_code_empty:
@@ -73,10 +73,10 @@ def protected_king_heuristic(game_state):
             return -1
         else:
             return -1
-        
+
     for col in range(king_col - 1, -1, -1):
         current_cell_occupation_code = game_state.board[king_row][col][0]
-        
+
         if current_cell_occupation_code == player:
             break
         elif current_cell_occupation_code == game_state.cell_occupation_code_empty:
@@ -85,11 +85,11 @@ def protected_king_heuristic(game_state):
             return -1
         else:
             return -1
-    
+
     i = 1
     while king_row + i < game_state.board_size and king_col + i < game_state.board_size:
         current_cell_occupation_code = game_state.board[king_row + i][king_col + i][0]
-        
+
         if current_cell_occupation_code == player:
             break
         elif current_cell_occupation_code == game_state.cell_occupation_code_empty:
@@ -99,11 +99,11 @@ def protected_king_heuristic(game_state):
         else:
             return -1
         i += 1
-        
+
     i = 1
     while king_row - i > -1 and king_col + i < game_state.board_size:
         current_cell_occupation_code = game_state.board[king_row - i][king_col + i][0]
-        
+
         if current_cell_occupation_code == player:
             break
         elif current_cell_occupation_code == game_state.cell_occupation_code_empty:
@@ -113,11 +113,11 @@ def protected_king_heuristic(game_state):
         else:
             return -1
         i += 1
-        
+
     i = 1
     while king_row + i < game_state.board_size and king_col - i > -1:
         current_cell_occupation_code = game_state.board[king_row + i][king_col - i][0]
-        
+
         if current_cell_occupation_code == player:
             break
         elif current_cell_occupation_code == game_state.cell_occupation_code_empty:
@@ -127,11 +127,11 @@ def protected_king_heuristic(game_state):
         else:
             return -1
         i += 1
-        
+
     i = 1
     while king_row - i > -1 and king_col - i > -1:
         current_cell_occupation_code = game_state.board[king_row - i][king_col - i][0]
-        
+
         if current_cell_occupation_code == player:
             break
         elif current_cell_occupation_code == game_state.cell_occupation_code_empty:
@@ -141,10 +141,10 @@ def protected_king_heuristic(game_state):
         else:
             return -1
         i += 1
-        
+
     return 1
-    
-    
+
+
 # Protected Play Heuristic, checks for protected pieces
 
 def protected_play_heuristic(game_state):
@@ -164,7 +164,7 @@ def protected_play_heuristic(game_state):
     # For pieces
         # If protected, += relative value of piece
     # Normalize, return
-    
+
 
 # Information Heuristic, checks for number of visible pieces
 
@@ -173,7 +173,7 @@ def information_heuristic(game_state):
         # If visible
             # Visible squares += 1
     # Normalize, return
-    
+
     visible_cells = 0
     for row in range(game_state.board_size):
             for col in range(game_state.board_size):
@@ -233,7 +233,7 @@ def def_threatened_pieces_heuristic(game_state):
             # (Threatened value += relative value of threatened piece)
     # Normalize, return
 
-    
+
 # TODO : insert definition of heuristics here
 
 # The same heuristics are going to be used by each player,
@@ -256,7 +256,7 @@ def other_player(player):
     if player == 2:
         return 1
 
-    
+
 def get_possible_moves_func(game_state):
     moves = []
     for row in range(game_state.board_size):
@@ -542,16 +542,3 @@ def h(game_state, weights):
     # print "h(x,w) : ", ret[0]
     # H(game_state).transpose * W * B(x) :
     return ret[0]
-
-def bernsteinweight_per_heuristic(nr_of_pieces, basis, degree):
-    t=nr_of_pieces/32
-    #assuming the bernstein basis is 3:
-    b=basis
-    d=degree
-    bernsteinweight = bernstein(b, d)
-    return bernsteinweight(t)
-
-
-# temporary function
-def heuristic_weights_shape():
-    return [len(HEURISTICS), 3]

@@ -531,7 +531,6 @@ class GameState:
                     break
                 elif self.board[r][c][0] == self.cell_occupation_code_white:
                     break
-
         return moves
 
     def get_queen_moves(self, row, col):

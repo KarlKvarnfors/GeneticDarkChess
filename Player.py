@@ -1,5 +1,5 @@
 from GameState import Move, GameState
-from heuristic import h, heuristic_weights_shape, HEURISTICS
+from heuristic import h, HEURISTICS
 import random
 import numpy
 

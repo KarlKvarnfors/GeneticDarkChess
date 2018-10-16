@@ -197,7 +197,10 @@ class Population:
         Str.pop(0)
         indiv = []
         for s in Str:
-            indiv.append(Individual.fromStr(s))
+            if s == '':
+                continue
+            else:
+                indiv.append(Individual.fromStr(s))
         return Population(indiv, generation)
 
     def compete(self, point_reset = False , threaded = False, n_threads = -1):
@@ -271,6 +274,78 @@ class Population:
                             i2.score += 1
             print('') # gets rid of the carriage return char
 
+    def competeAgainst(self, pop, point_reset = False , threaded = False, n_threads = -1):
+        """
+            Every individual competes in dark chess and gets a final score distributed as such :
+                + 3 per win
+                + 1 per draw
+                + 0 per loss
+        """
+        if point_reset:
+            print("Reinitialising each players scores")
+            for i in self.individuals:
+                i.score = 0
+            for i in pop.individuals:
+                i.score = 0
+        nb_faceoffs = self.size*pop.size
+        cout = 0
+        if threaded:
+            from pathos.multiprocessing import ProcessingPool as Pool
+            from multiprocessing import cpu_count
+            if n_threads < 0:
+                nr_threads = cpu_count()//2 # that is usually the number of physical cores
+            else:
+                nr_threads = n_threads
+            print("Starting competition with {} threads".format(nr_threads))
+
+            def syncGame(pair):
+                p1, p2 = pair
+                winner = play_game(p1,p2)
+                if winner is p1:
+                    return [3,0]
+                elif winner is p2:
+                    return [0,3]
+                else:
+                    return [1,1]
+
+            player_pairs = []
+            # scoreLock = multiprocessing.RLock()
+            p = Pool(nr_threads)
+            for k1, i1 in enumerate(self.individuals):
+                for k2, i2 in enumerate(pop.individuals):
+                    player_pairs.append([
+                        i1.get_player(GameState.cell_occupation_code_white),
+                        i2.get_player(GameState.cell_occupation_code_black)
+                    ])
+            res = p.map(syncGame, player_pairs)
+            len_i = len(self.individuals)
+            len_j = len(pop .individuals)
+            cout = 0
+            for i in range(len_i):
+                for j in range(len_j):
+                    self.individuals[i].score+=res[cout][0]
+                    pop .individuals[j].score+=res[cout][1]
+                    cout+=1
+        else:
+            print("Starting competition")
+            for k1, i1 in enumerate(self.individuals):
+                for k2, i2 in enumerate(pop.individuals):
+                    cout += 1
+                    print ( "competition underway : {}% [".format(int(100*cout/nb_faceoffs))+"#"*cout+"-"*(nb_faceoffs-cout)+"]", end='\r')
+                    p1 = i1.get_player(GameState.cell_occupation_code_white)
+                    p2 = i2.get_player(GameState.cell_occupation_code_black)
+                    winner = play_game(p1,p2)
+                    if winner is p1:
+                        i1.score += 3
+                        i2.score += 0
+                    elif winner is p2:
+                        i1.score += 0
+                        i2.score += 3
+                    else:
+                        i1.score += 1
+                        i2.score += 1
+            print('') # gets rid of the carriage return char
+
     def everybodyCompetes(populations, point_reset = True, threaded = False, n_threads = -1):
         if point_reset:
             for pop in populations:
@@ -280,11 +355,9 @@ class Population:
         for k1, pop1 in enumerate(populations):
             for k2, pop2 in enumerate(populations):
                 if k1 > k2 :
-                    pop = pop1 + pop2
-                    pop.compete(False, threaded, n_threads)
-                    l1, l2 = len(pop1), len(pop2)
-                    pop1 = [i for i in pop[ 0 : l1   ]]
-                    pop2 = [i for i in pop[l1 : l1+l2]]
+                    pop1.competeAgainst(pop2, False, threaded, n_threads)
+                elif k1 == k2:
+                    pop1.compete(False, threaded, n_threads)
 
     def naturalySelect(self):
         self.individuals.sort(key= lambda i : i.score)
@@ -321,7 +394,6 @@ class Population:
                     break
                 for k2, i2 in enumerate(self.individuals):
                     if birthCount >= deathToll:
-
                         break
                     elif (k1 > k2) and (not mating[k1]) and (not mating[k2]):
                         q = i1.score*i2.score/max_score**2

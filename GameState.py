@@ -1,6 +1,3 @@
-# for colorful printing
-from ansimarkup import ansiprint as print
-
 class Move:
     def __init__(self, prev_game_state, from_row_col, to_row_col):
         self.prev_game_state = prev_game_state
@@ -142,7 +139,7 @@ class GameState:
         if occupation_code == GameState.cell_occupation_code_empty:
             return '.'
         elif occupation_code == GameState.cell_occupation_code_fog:
-            return '<fg #888888>X</fg #888888>'
+            return '\33[90mX\033[0m'
 
         piece_string = ''
         if piece_type == GameState.cell_piece_type_pawn:
@@ -163,7 +160,7 @@ class GameState:
         if occupation_code == GameState.cell_occupation_code_white:
             return piece_string
         elif occupation_code == GameState.cell_occupation_code_black:
-            return '<red>' + piece_string + '</red>'
+            return '\033[31m' + piece_string + '\033[0m'
 
     def chess_position_str_to_row_col(position_str):
         if len(position_str) != 2:
@@ -256,7 +253,7 @@ class GameState:
         if self.next_player == self.cell_occupation_code_white:
             print('white')
         else:
-            print('<red>black</red>')
+            print('\033[31mblack\033[0m')
         print('Moves until draw: ' + str(self.moves_until_draw))
         print('Captured white pieces: [', end='')
         for captured_white_piece in self.captured_white_pieces:
@@ -534,7 +531,6 @@ class GameState:
                     break
                 elif self.board[r][c][0] == self.cell_occupation_code_white:
                     break
-
         return moves
 
     def get_queen_moves(self, row, col):

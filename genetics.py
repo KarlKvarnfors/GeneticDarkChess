@@ -289,6 +289,7 @@ class Population:
     def naturalySelect(self):
         self.individuals.sort(key= lambda i : i.score)
         max_score = self.individuals[-1].score
+
         def transition_f(m, s):
             # m : mean
             # s: spread / standard deviation
@@ -312,12 +313,15 @@ class Population:
         new_individuals = []
         mating = [False]*len(self.individuals)
         max_score = self.individuals[-1].score
+        print("Death Toll = " + str(deathToll))
         while birthCount < deathToll:
+
             for k1, i1 in enumerate(self.individuals):
                 if birthCount >= deathToll:
                     break
                 for k2, i2 in enumerate(self.individuals):
                     if birthCount >= deathToll:
+
                         break
                     elif (k1 > k2) and (not mating[k1]) and (not mating[k2]):
                         q = i1.score*i2.score/max_score**2

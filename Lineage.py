@@ -1,5 +1,7 @@
 from genetics import Population
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from numpy import linspace
 import time
 
 
@@ -58,8 +60,15 @@ class Lineage:
             gens.append(pop.generation)
         scores = [[ i.score for i in pop.individuals] for pop in populations]
         length = len(scores[0])
+
+        start = 0.0
+        stop = 1.0
+        number_of_lines= len(scores)
+        cm_subsection = linspace(start, stop, number_of_lines)
+        colors = [ cm.brg(x) for x in cm_subsection ]
+
         for k, gen_scores in enumerate(scores):
-            plt.plot(gen_scores, label='Generation {}'.format(gens[k]))
+            plt.plot(gen_scores, label='Generation {}'.format(gens[k]), color=colors[k])
         plt.show()
 
     def beatYourElders(self, ancestry = 1, plot = True, point_reset = True, threaded = False, n_threads = -1):

@@ -7,7 +7,7 @@ from genetics import Individual, Chromosome, Population, HEURISTICS
 from Lineage import Lineage
 
 
-def main(pol_n, len_i, len_g, lin_n, regen, n_threads):
+def main(pol_n, len_i, len_g, lin_n, regen, n_threads, show):
 
     THREADED = n_threads > 0
     THREADS = n_threads
@@ -62,7 +62,7 @@ def main(pol_n, len_i, len_g, lin_n, regen, n_threads):
                     print("No previous generations were found, please add the -r or --regenerate flag")
                     exit("no files found : "+lineageName("<Bernstein base>", "<generationNumber>"))
     # print(lin)
-    lin.beatYourElders(5, True, True, True, n_threads)
+    lin.beatYourElders(show, True, True, True, n_threads)
     # Lineage.plotScorePerGeneration(lin.populations)
 
 
@@ -79,8 +79,10 @@ if __name__ == "__main__":
                         help='number of different lineages (default: 1)')
     parser.add_argument('-t', '--threads', type=int, default=-1,
                         help='number of different lineages (default: -1, non threaded)')
+    parser.add_argument('--show', type=int, default=5,
+                        help='show the last X genertions performance (default: 5)')
     parser.add_argument('-r', "--regenerate", action="store_true",
                         help="Regenerates the lineage from start (default : tries to load from file)")
     args = parser.parse_args()
 
-    main(args.n+1, args.i, args.g, args.l, args.regenerate, args.threads)
+    main(args.n+1, args.i, args.g, args.l, args.regenerate, args.threads, args.show)

@@ -7,7 +7,7 @@ from genetics import Individual, Chromosome, Population, HEURISTICS
 from Lineage import Lineage
 
 
-def main(pol_n, len_i, len_g, lin_n, regen, n_threads, config_tag):
+def main(pol_n, len_i, len_g, lin_n, regen, n_threads, show, config_tag):
 
     THREADED = n_threads > 0
     THREADS = n_threads
@@ -62,7 +62,7 @@ def main(pol_n, len_i, len_g, lin_n, regen, n_threads, config_tag):
                     print("No previous generations were found, please add the -r or --regenerate flag")
                     exit("no files found : "+lineageName("<Bernstein base>", "<generationNumber>"))
     # print(lin)
-    lin.beatYourElders(5, True, True, True, n_threads, config_tag)
+    lin.beatYourElders(show, True, True, True, n_threads, config_tag)
     # Lineage.plotScorePerGeneration(lin.populations)
 
 
@@ -79,6 +79,8 @@ if __name__ == "__main__":
                         help='number of different lineages (default: 1)')
     parser.add_argument('-t', '--threads', type=int, default=-1,
                         help='number of different lineages (default: -1, non threaded)')
+    parser.add_argument('--show', type=int, default=5,
+                        help='show the last X genertions performance (default: 5)')
     parser.add_argument('-r', "--regenerate", action="store_true",
                         help="Regenerates the lineage from start (default : tries to load from file)")
     parser.add_argument('-m' "--mutation", type=int, default=10,
@@ -106,4 +108,4 @@ if __name__ == "__main__":
     """
     Population.MEAN_CUT_SELECTION = 0.9
     Chromosome.MUTATION_STRENGTH = 10
-    main(args.n+1, args.i, args.g, args.l, args.regenerate, args.threads, "ms = " + str(10) + ", cut = " + str(0.9))
+    main(args.n+1, args.i, args.g, args.l, args.regenerate, args.threads, args.show, "ms = " + str(10) + ", cut = " + str(0.9))

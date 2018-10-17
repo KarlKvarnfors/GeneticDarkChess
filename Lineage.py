@@ -1,5 +1,7 @@
 from genetics import Population
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from numpy import linspace
 import time
 
 
@@ -58,9 +60,16 @@ class Lineage:
             gens.append(pop.generation)
         scores = [[ i.score for i in pop.individuals] for pop in populations]
         length = len(scores[0])
+
+        start = 0.0
+        stop = 1.0
+        number_of_lines= len(scores)
+        cm_subsection = linspace(start, stop, number_of_lines)
+        colors = [ cm.brg(x) for x in cm_subsection ]
+        
         f = plt.figure()
         for k, gen_scores in enumerate(scores):
-            plt.plot(gen_scores, label='Generation {}'.format(gens[k]))
+            plt.plot(gen_scores, label='Generation {}'.format(gens[k]), color=colors[k])
         plt.title('Population Evolution Graph (' + config_tag + ')')
         plt.xlabel('Individual (sorted by score)')
         plt.ylabel('Score')
@@ -69,6 +78,8 @@ class Lineage:
     def plotMeanAndMaxPerGeneration(self, populations, config_tag):
         means = []
         maxs = []
+
+
 
         for pop in populations:
             popMax = -10000000

@@ -9,12 +9,6 @@ import Player
 from play_game import play_game
 # GLOBAL VARIABLES
 # genes and precision
-WEIGHT_PRECISION = 32 # bit float precison, also the number of bits in each gene
-MUTATION_STRENGTH = 5 # the average number of bits that will flip in each gene
-B_ORDER = 0  # DEPRECATED order of the Bernstein basis
-# Population fitting
-MEAN_CUT_SELECTION = .5 # ration for the mean transition for the natural selection in the population
-SPREAD_CUT_SELECTION = .3 # the spread
 
 def set_bit(bit, value):
     return value | (1<<bit)
@@ -29,6 +23,10 @@ def get_bit(bit, value):
     return (value & (1<<bit))>>bit
 
 class Chromosome:
+    WEIGHT_PRECISION = 32  # bit float precison, also the number of bits in each gene
+    MUTATION_STRENGTH = 5 # the average number of bits that will flip in each gene
+
+
     def __init__(self, genes = numpy.array([])):
         self.genes = genes
         self.length = self.genes.size
@@ -48,33 +46,33 @@ class Chromosome:
 
     #static
     def weight_to_gene(w):
-        return int(w*2**WEIGHT_PRECISION)
+        return int(w*2**Chromosome.WEIGHT_PRECISION)
 
     def set_gene(self, w, index):
         self.genes[index] = weight_to_gene(w)
 
     def set_genes(self, weights):
         self.genes = (
-            weights.reshape(weights.size)*2**WEIGHT_PRECISION
+            weights.reshape(weights.size)*2**Chromosome.WEIGHT_PRECISION
         ) . astype(int)
         self.length = weights.size
 
     def to_weights(self, bernstein_basis_order):
         # the basis order + 1 has to divide the number of genes
         m = bernstein_basis_order + 1 #the number of polynomes
-        return self.genes.reshape(self.length//m,m).astype(float)/2**WEIGHT_PRECISION
+        return self.genes.reshape(self.length//m,m).astype(float)/2**Chromosome.WEIGHT_PRECISION
 
     def mutate_bit(self, f_bit, bit):
-        gene_index = bit//WEIGHT_PRECISION
-        bit = bit%WEIGHT_PRECISION
+        gene_index = bit//Chromosome.WEIGHT_PRECISION
+        bit = bit%Chromosome.WEIGHT_PRECISION
         self.genes[gene_index] = f_bit(bit, self.genes[gene_index])
         return self.genes[gene_index]
 
     def random_mutations(self, bernstein_basis_order):
-        length = self.length*WEIGHT_PRECISION
+        length = self.length*Chromosome.WEIGHT_PRECISION
         if length == 0 :
             return
-        p = float(MUTATION_STRENGTH)/WEIGHT_PRECISION
+        p = float(Chromosome.MUTATION_STRENGTH)/Chromosome.WEIGHT_PRECISION
         # cout = 0
         for i in range(length) :
             q = random.uniform(0, 1)
@@ -174,6 +172,11 @@ class Individual:
         return Player.Player(True, player_id, self.get_weights(False))
 
 class Population:
+
+    # Population fitting
+    MEAN_CUT_SELECTION = .5 # ration for the mean transition for the natural selection in the population
+    SPREAD_CUT_SELECTION = .1 # the spread
+
     def __init__(self, individuals, generation = 0):
         self.individuals = individuals
         self.generation = generation
@@ -369,14 +372,20 @@ class Population:
             # https://en.wikipedia.org/wiki/Logistic_distribution
             return lambda _x : .5 + .5*tanh( (_x-m)/2/s )
 
-        f_t = transition_f(MEAN_CUT_SELECTION, SPREAD_CUT_SELECTION)
+        f_t = transition_f(Population.MEAN_CUT_SELECTION, Population.SPREAD_CUT_SELECTION)
         deathToll = 0
-        for k in range(len(self.individuals)):
+
+        # Shuffle indicies to remove selection bias
+        index = [i for i in range(len(self.individuals))]
+        random.shuffle(index)
+
+        for k in index:
             q = f_t(self.individuals[k].score/max_score)
             p = random.uniform(0,1)
-            if p > q :
+            if p > q and len(self.individuals) - deathToll > 2:
                 self.individuals[k].alive = False
-                deathToll += 1
+                deathToll += 1            
+
         self.individuals = [i for i in self.individuals if i.alive]
         return deathToll
 
@@ -387,6 +396,8 @@ class Population:
         mating = [False]*len(self.individuals)
         max_score = self.individuals[-1].score
         print("Death Toll = " + str(deathToll))
+
+        """
         while birthCount < deathToll:
 
             for k1, i1 in enumerate(self.individuals):
@@ -404,6 +415,36 @@ class Population:
                             birthCount += 1
                             new_individuals.append(i1.mate_with(i2))
             mating = [False]*len(self.individuals)
+            """
+
+        sum_of_scores = 0
+        for ind in self.individuals:
+            sum_of_scores += ind.score
+
+        while birthCount < deathToll:
+            #sample first parent
+            parent_1 = self.individuals[-1]
+            p = random.uniform(0,1)
+            acc_score = 0
+            for ind in self.individuals:
+                acc_score += ind.score
+                if(p*sum_of_scores <= acc_score):
+                    parent_1 = ind
+                    break
+
+            #sample second parent
+            parent2 = self.individuals[-1]
+            p = random.uniform(0,1)
+            acc_score = 0
+            for ind in self.individuals:
+                acc_score += ind.score
+                if(p*sum_of_scores <= acc_score):
+                    parent_2 = ind
+                    break
+            
+            birthCount += 1
+            new_individuals.append(parent_1.mate_with(parent_2))
+
         self.individuals.extend(new_individuals)
         return new_individuals
 

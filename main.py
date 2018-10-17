@@ -7,7 +7,7 @@ from genetics import Individual, Chromosome, Population, HEURISTICS
 from Lineage import Lineage
 
 
-def main(pol_n, len_i, len_g, lin_n, regen, n_threads):
+def main(pol_n, len_i, len_g, lin_n, regen, n_threads, config_tag):
 
     THREADED = n_threads > 0
     THREADS = n_threads
@@ -62,7 +62,7 @@ def main(pol_n, len_i, len_g, lin_n, regen, n_threads):
                     print("No previous generations were found, please add the -r or --regenerate flag")
                     exit("no files found : "+lineageName("<Bernstein base>", "<generationNumber>"))
     # print(lin)
-    lin.beatYourElders(5, True, True, True, n_threads)
+    lin.beatYourElders(5, True, True, True, n_threads, config_tag)
     # Lineage.plotScorePerGeneration(lin.populations)
 
 
@@ -81,6 +81,29 @@ if __name__ == "__main__":
                         help='number of different lineages (default: -1, non threaded)')
     parser.add_argument('-r', "--regenerate", action="store_true",
                         help="Regenerates the lineage from start (default : tries to load from file)")
+    parser.add_argument('-m' "--mutation", type=int, default=10,
+                        help='number of mutations per 32-bit weight (default: 10)')
+    parser.add_argument('-c' "--cut", type=float, default=0.9,
+                        help='approximate quota of dying individuals per generation (default: 0.9)')
+
     args = parser.parse_args()
 
-    main(args.n+1, args.i, args.g, args.l, args.regenerate, args.threads)
+
+    """
+    Hyperparameter optimization
+
+    mutation_strengths = [2, 4, 6, 8, 10]
+    median_cuts = [0.2, 0.4, 0.6, 0.8, 0.9]
+
+    for mut_strength in mutation_strengths:
+        for median_cut in median_cuts:
+            print("ms=" + str(mut_strength) + ",cut=" + str(median_cut))
+            Population.MEAN_CUT_SELECTION = median_cut
+            Chromosome.MUTATION_STRENGTH = mut_strength
+            main(args.n+1, args.i, args.g, args.l, args.regenerate, args.threads, "ms=" + str(mut_strength) + ", cut=" + str(median_cut))
+
+    test = input("SAVE ALL FIGURES FIRST! Then press enter to close")
+    """
+    Population.MEAN_CUT_SELECTION = 0.9
+    Chromosome.MUTATION_STRENGTH = 10
+    main(args.n+1, args.i, args.g, args.l, args.regenerate, args.threads, "ms = " + str(10) + ", cut = " + str(0.9))

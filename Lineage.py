@@ -50,7 +50,7 @@ class Lineage:
         self.updtLen()
         return popul
 
-    def plotScorePerGeneration(self, populations):
+    def plotScorePerGeneration(self, populations, config_tag):
         # best if all generations have competed against each other
         gens = []
         for pop in populations:
@@ -58,15 +58,50 @@ class Lineage:
             gens.append(pop.generation)
         scores = [[ i.score for i in pop.individuals] for pop in populations]
         length = len(scores[0])
+        f = plt.figure()
         for k, gen_scores in enumerate(scores):
             plt.plot(gen_scores, label='Generation {}'.format(gens[k]))
-        plt.show()
+        plt.title('Population Evolution Graph (' + config_tag + ')')
+        plt.xlabel('Individual (sorted by score)')
+        plt.ylabel('Score')
+        f.show()
+    
+    def plotMeanAndMaxPerGeneration(self, populations, config_tag):
+        means = []
+        maxs = []
 
-    def beatYourElders(self, ancestry = 1, plot = True, point_reset = True, threaded = False, n_threads = -1):
+        for pop in populations:
+            popMax = -10000000
+            mean = 0
+            for ind in pop.individuals:
+                mean += ind.score
+                if ind.score > popMax:
+                    popMax = ind.score
+            mean /= len(pop.individuals)
+            means.append(mean)
+            maxs.append(popMax)
+
+        f = plt.figure()
+        
+        plt.plot(means, label='Mean Score')
+        plt.plot(maxs,  label='Max Score')
+        plt.title('Mean and Max (' + config_tag + ')')
+        plt.xlabel('Generation')
+        plt.ylabel('Score')
+        f.show()
+
+    def beatYourElders(self, ancestry = 1, plot = True, point_reset = True, threaded = False, n_threads = -1, config_tag=''):
         pops = [pop for pop in self.populations if self.generations-pop.generation < ancestry]
         Population.everybodyCompetes(pops, point_reset, threaded, n_threads)
         if plot:
-            self.plotScorePerGeneration(pops)
+            self.plotScorePerGeneration(pops, config_tag)
+            self.plotMeanAndMaxPerGeneration(pops, config_tag)
+
+    def plotScoresAgainstReferencePopulation(self, refPop):
+        for pop in self.populations:
+            pop.competeAgainst(refPop, point_reset = True , threaded = True, n_threads = 4)
+        self.plotScorePerGeneration(self.populations)
+        self.plotMeanAndMaxPerGeneration(self.populations)
 
 
 if __name__ == "__main__":
